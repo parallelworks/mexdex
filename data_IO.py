@@ -23,10 +23,13 @@ def removeTrailingCharFromStrList(strList, char2strip):
 def textStartsWithExactMath(text, flag_str, delimiter):
     if delimiter is None:
         delimiter = '\\b'
-    if re.match(flag_str+delimiter, text):
-        return True
+    if flag_str:
+        if re.match(flag_str+delimiter, text):
+            return True
+        else:
+            return False
     else:
-        return False
+        return True
 
 
 def str2bool(v):
@@ -133,7 +136,8 @@ def read_floats_from_string(str2read, delimiter=None):
 def open_file(file_name, open_mode="r"):
     if open_mode == "w":
         if not os.path.exists(os.path.dirname(file_name)):
-            os.makedirs(os.path.dirname(file_name))
+            if os.path.dirname(file_name):
+                os.makedirs(os.path.dirname(file_name))
     try:
         file_pointer = open(file_name, open_mode)
         return file_pointer
@@ -146,3 +150,39 @@ def tarDirectory(output_filename, source_dir, compressMode="w"):
     with tarfile.open(output_filename, compressMode) as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
+
+def setOptionalSysArgs(args, paramDefaultValue, argNumber):
+    if len(args) >= (argNumber+1):
+        param = args[argNumber]
+    else:
+        param = paramDefaultValue
+    return param
+
+
+def byteify(input):
+    """
+    Got this function from https://stackoverflow.com/questions/2357230/what-is-the-proper-way-to-comment-functions-in-python
+    "This short and simple recursive function will convert any decoded JSON object from using unicode strings to
+    UTF-8-encoded byte strings"
+    This is not the most efficient solution. See the code provided by Mirec Miskuf to see how to use an object_hook to
+    do this more efficiently.
+    """
+    if isinstance(input, dict):
+        try:
+            inputItems = input.iteritems()
+        except:
+            inputItems = input.items()
+        return {byteify(key): byteify(value)
+                for key, value in inputItems}
+    elif isinstance(input, list):
+        return [byteify(element) for element in input]
+    elif (sys.version_info[0] < 3):
+        if isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+    else:
+        if isinstance(input, bytes):
+            return input.encode('utf-8')
+        else:
+            return input
