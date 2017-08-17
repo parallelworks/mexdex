@@ -273,7 +273,10 @@ def writeOutputParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
     # Read the desired metric from each output file
     for icase, case in enumerate(cases):
         # Read values from the Metrics Extraction file first
-        if csvTemplateName:
+        readMECSVFile = False
+        if any(param[1]>=0 for param in paramTable):
+            readMECSVFile = True
+        if readMECSVFile:
             extractedFile = csvTemplateName.replace("@@i@@", str(icase))
             fcaseMetrics = data_IO.open_file(extractedFile, 'r')
             caseOutStr = ""
