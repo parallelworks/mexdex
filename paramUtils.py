@@ -300,9 +300,8 @@ def writeOutputParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
             #
             # For example:
             # pressure_drop;results/case_@@i@@_pressure_drop.txt; ;1
-
-            for param in paramTable:
-                caseOutStr = ""
+			caseOutStr = ""
+            for param in paramTable:            
                 if param[1] == -1:
                     outFile = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 0, 0)
                     outFile = outFile.replace("@@i@@", str(icase))
