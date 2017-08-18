@@ -199,8 +199,16 @@ def correctfieldcomponent(datasource, metrichash):
 
 
 def setKPIFieldDefaults(dataSource, metrichash):
+
+    if not ('ParaviewMetric' in metrichash):
+        metrichash['ParaviewMetric'] = 'True'
+    # If not a Paraview Metric, don't need to do anything
+    if not data_IO.str2bool(metrichash['ParaviewMetric']):
+        return metrichash
+
     # Set component to "Magnitude" if not given for vector/tensor fields
     metrichash = correctfieldcomponent(dataSource, metrichash)
+
 
     # Set default image properties
     if not ('image' in metrichash):
