@@ -55,7 +55,7 @@ renderView1.InteractionMode = '2D'
 renderView1.OrientationAxesVisibility = 0
 
 for kpi in kpihash:
-    if not data_IO.str2bool(kpihash[kpi]['ParaviewMetric']):
+    if not data_IO.str2bool(kpihash[kpi]['IsParaviewMetric']):
         continue
     metrichash = kpihash[kpi]
     kpitype = metrichash['type']

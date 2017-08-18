@@ -200,10 +200,10 @@ def correctfieldcomponent(datasource, metrichash):
 
 def setKPIFieldDefaults(dataSource, metrichash):
 
-    if not ('ParaviewMetric' in metrichash):
-        metrichash['ParaviewMetric'] = 'True'
+    if not ('IsParaviewMetric' in metrichash):
+        metrichash['IsParaviewMetric'] = 'True'
     # If not a Paraview Metric, don't need to do anything
-    if not data_IO.str2bool(metrichash['ParaviewMetric']):
+    if not data_IO.str2bool(metrichash['IsParaviewMetric']):
         return metrichash
 
     # Set component to "Magnitude" if not given for vector/tensor fields
