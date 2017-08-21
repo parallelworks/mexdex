@@ -2,6 +2,7 @@ from paraview.simple import *
 import json
 import sys
 import pvutils
+import metricsJsonUtils
 import data_IO
 import os
 
@@ -27,7 +28,7 @@ backgroundColor = [1, 1, 1]   # set background color to white
 # Read the desired outputs/metrics from the csv file:
 fp_jsonIn = data_IO.open_file(kpiFileAddress)
 kpihash = json.load(fp_jsonIn)
-kpihash = pvutils.byteify(kpihash)
+kpihash = data_IO.byteify(kpihash)
 fp_jsonIn.close()
 print(kpihash)
 
@@ -46,7 +47,9 @@ print("Generating KPIs")
 
 # Set the default values for missing fields in the kpihash
 for kpi in kpihash:
-    kpihash[kpi] = pvutils.setKPIFieldDefaults(dataReader, kpihash[kpi])
+    kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi])
+    if not (kpihash[kpi]['field'] == 'None'):
+        kpihash[kpi] = pvutils.correctfieldcomponent(dataReader, kpihash[kpi])
 
 fp_csv_metrics = data_IO.open_file(metricFile, "w")
 fp_csv_metrics.write(",".join(['metric','ave','min','max','sd'])+"\n")

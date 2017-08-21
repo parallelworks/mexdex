@@ -11,25 +11,6 @@ import matplotlib
 import numpy as np
 import warnings
 
-def byteify(input):
-    """
-    Got this function from https://stackoverflow.com/questions/2357230/what-is-the-proper-way-to-comment-functions-in-python
-    "This short and simple recursive function will convert any decoded JSON object from using unicode strings to 
-    UTF-8-encoded byte strings"
-    This is not the most efficient solution. See the code provided by Mirec Miskuf to see how to use an object_hook to 
-    do this more efficiently.
-    """
-    if isinstance(input, dict):
-        return {byteify(key): byteify(value)
-                for key, value in input.iteritems()}
-    elif isinstance(input, list):
-        return [byteify(element) for element in input]
-    elif isinstance(input, unicode):
-        return input.encode('utf-8')
-    else:
-        return input
-
-
 def getParaviewVersion():
     """ Return paraview version as a double number: e.g. 5.4"""
     PVversionMajor = paraview.servermanager.vtkSMProxyManager.GetVersionMajor() 
@@ -184,76 +165,13 @@ def correctfieldcomponent(datasource, metrichash):
     Set "fieldComponent" to "Magnitude" if the component of vector/tensor fields is not given. For scalar fields set 
     "fieldComponent" to an empty string.
     """
-    if 'field' in metrichash:
-        kpifld = metrichash['field']
-        arrayInfo = datasource.PointData[kpifld]
-        if isfldScalar(arrayInfo):
-            metrichash['fieldComponent'] = ''
-        else:
-            if not 'fieldComponent' in metrichash:
-                metrichash['fieldComponent'] = 'Magnitude'
+    kpifld = metrichash['field']
+    arrayInfo = datasource.PointData[kpifld]
+    if isfldScalar(arrayInfo):
+        metrichash['fieldComponent'] = ''
     else:
-        metrichash['field'] = 'None'
-        metrichash['fieldComponent'] = 'None'
-    return metrichash
-
-
-def setKPIFieldDefaults(dataSource, metrichash):
-
-    if not ('IsParaviewMetric' in metrichash):
-        metrichash['IsParaviewMetric'] = 'True'
-    # If not a Paraview Metric, don't need to do anything
-    if not data_IO.str2bool(metrichash['IsParaviewMetric']):
-        return metrichash
-
-    # Set component to "Magnitude" if not given for vector/tensor fields
-    metrichash = correctfieldcomponent(dataSource, metrichash)
-
-
-    # Set default image properties
-    if not ('image' in metrichash):
-        metrichash['image'] = 'None'
-    if not ('bodyopacity' in metrichash):
-        metrichash['bodyopacity'] = "0.3"
-    if not ('min' in metrichash):
-        metrichash['min'] = 'auto'
-    if not ('max' in metrichash):
-        metrichash['max'] = 'auto'
-    if not ('discretecolors' in metrichash):
-        metrichash['discretecolors'] = '20'
-    if not ('colorscale' in metrichash):
-        metrichash['colorscale'] = 'Blue to Red Rainbow'
-    if not ('invertcolor' in metrichash):
-        metrichash['invertcolor'] = 'False'
-    if not ('opacity' in metrichash):
-        metrichash['opacity'] = "1"
-
-    # Set default streamline properties
-    if metrichash['type'] == "StreamLines":
-        if not ('seedType' in metrichash):
-            metrichash['seedType'] = 'Line'
-
-    if not('extractStats' in metrichash):
-        if metrichash['field'] == 'None':
-            metrichash['extractStats'] = 'False'
-        else:
-            metrichash['extractStats'] = 'True'
-
-    if not ('animation' in metrichash):
-        metrichash['animation'] = 'False'
-
-    if not ('blender' in metrichash):
-        metrichash['blender'] = 'False'
-    else:
-        try:
-            metrichash['blendercontext'] = metrichash['blendercontext'].split(",")
-        except:
-            metrichash['blendercontext'] = []
-        try:
-            metrichash['blenderbody'] = metrichash['blenderbody'].split(",")
-        except:
-            metrichash['blenderbody'] = False
-
+        if not 'fieldComponent' in metrichash:
+            metrichash['fieldComponent'] = 'Magnitude'
     return metrichash
 
 
