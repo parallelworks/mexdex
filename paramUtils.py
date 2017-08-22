@@ -179,9 +179,6 @@ def getOutputParamsFromKPI(kpiFile):
         metrichash = kpihash[kpi]
         kpitype = metrichash['type']
 
-        if kpitype == "StreamLines":
-            metrichash['extractStats'] = "False"
-
         if 'extractStats' in metrichash:
             extractStats = data_IO.str2bool(metrichash['extractStats'])
         else:
@@ -236,7 +233,7 @@ def getOutputParamsStatList(outputParamsFileAddress, outputParamNames, stats2inc
         # outputName;outputFileNameTemplate;outputFlag;delimitor;locationInFile
         #
         # For example:
-        # pressure_drop;results/case_@@i@@_pressure_drop.txt;;" ";1
+        # pressure_drop;results/case_{:d}_pressure_drop.txt;;" ";1
         #
         outParamsFromOtherFiles = []
         for line in allDesiredOutputs[1:]:
@@ -274,17 +271,17 @@ def writeOutputParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
     for icase, case in enumerate(cases):
         # Read values from the Metrics Extraction file first
         readMECSVFile = False
-        if any(param[1]>=0 for param in paramTable):
+        if any(param[1] >= 0 for param in paramTable):
             readMECSVFile = True
         if readMECSVFile:
-            extractedFile = csvTemplateName.replace("@@i@@", str(icase))
+            extractedFile = csvTemplateName.format(icase)
             fcaseMetrics = data_IO.open_file(extractedFile, 'r')
             caseOutStr = ""
 
             for param in paramTable:
                 if param[1] >=0:
                     param_icase = data_IO.read_float_from_file_pointer(fcaseMetrics, param[0],
-                                                                   ',', param[1])
+                                                                       ',', param[1])
                     caseOutStr += "," + str(param_icase)
             caselist[icase] += caseOutStr
             fcaseMetrics.close()
@@ -297,17 +294,17 @@ def writeOutputParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
             # outputName;outputFileNameTemplate;outputFlag;delimitor;locationInFile
             #
             # For example:
-            # pressure_drop;results/case_@@i@@_pressure_drop.txt;;" ";1
+            # pressure_drop;results/case_{:d}_pressure_drop.txt;;" ";1
 
             # outputName;outputFileNameTemplate;delimitor;locationInFile
             #
             # For example:
-            # pressure_drop;results/case_@@i@@_pressure_drop.txt; ;1
+            # pressure_drop;results/case_{:d}_pressure_drop.txt; ;1
             caseOutStr = ""
             for param in paramTable:            
                 if param[1] == -1:
                     outFile = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 0, 0)
-                    outFile = outFile.replace("@@i@@", str(icase))
+                    outFile = outFile.format(icase)
                     foutFile = data_IO.open_file(outFile,'r')
                     outFileParamFlag = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 1, 0)
                     outFileDelimiter = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 2, 0)[1]
