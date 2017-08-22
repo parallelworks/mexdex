@@ -351,15 +351,14 @@ def colorMetric(d, metrichash):
     #    display.SetScalarBarVisibility(renderView1, False)
 
 
-def createSlice(metrichash, dataReader, dataDisplay, isIndivImgs):
+def createSlice(metrichash, dataReader, dataDisplay):
     camera = GetActiveCamera()
     renderView1 = GetActiveViewOrCreate('RenderView')
 
     opacity=float(metrichash['opacity'])
     bodyopacity=float(metrichash['bodyopacity'])
-    if isIndivImgs:
-        dataDisplay.Opacity = bodyopacity
-        dataDisplay.ColorArrayName = ['POINTS', '']
+    dataDisplay.Opacity = bodyopacity
+    dataDisplay.ColorArrayName = ['POINTS', '']
     slicetype = "Plane"
     plane = metrichash['plane']
 
@@ -377,15 +376,14 @@ def createSlice(metrichash, dataReader, dataDisplay, isIndivImgs):
     return s
 
 
-def createStreamTracer(metrichash, data_reader, data_display, isIndivImages):
+def createStreamTracer(metrichash, data_reader, data_display):
     camera = GetActiveCamera()
     renderView1 = GetActiveViewOrCreate('RenderView')
 
     opacity = float(metrichash['opacity'])
     bodyopacity = float(metrichash['bodyopacity'])
-    if isIndivImages == True:
-        data_display.Opacity = bodyopacity
-        data_display.ColorArrayName = ['POINTS', '']
+    data_display.Opacity = bodyopacity
+    data_display.ColorArrayName = ['POINTS', '']
 
     seedPosition = setviewposition(metrichash['position'], camera)
     if metrichash['seedType'].lower() == 'line':
@@ -443,15 +441,14 @@ def createStreamTracer(metrichash, data_reader, data_display, isIndivImages):
     return tube
 
 
-def createClip(metrichash, data_reader, data_display, isIndivImages):
+def createClip(metrichash, data_reader, data_display):
     camera = GetActiveCamera()
     renderView1 = GetActiveViewOrCreate('RenderView')
 
     opacity = float(metrichash['opacity'])
     bodyopacity = float(metrichash['bodyopacity'])
-    if isIndivImages == True:
-        data_display.Opacity = bodyopacity
-        data_display.ColorArrayName = ['POINTS', '']
+    data_display.Opacity = bodyopacity
+    data_display.ColorArrayName = ['POINTS', '']
     cliptype = "Plane"
     plane = metrichash['plane']
     if 'invert' in metrichash.keys():
@@ -515,12 +512,11 @@ def createVolume(metrichash, data_reader):
     cDisplay.Opacity = 0.1
     return c
 
-def createBasic(metrichash, dataReader, dataDisplay, isIndivImgs):
+def createBasic(metrichash, dataReader, dataDisplay):
     camera = GetActiveCamera()
     renderView1 = GetActiveViewOrCreate('RenderView')
     bodyopacity=float(metrichash['bodyopacity'])
-    if isIndivImgs:
-        dataDisplay.Opacity = bodyopacity
+    dataDisplay.Opacity = bodyopacity
 
     if not (metrichash['field'] == 'None'):
         colorMetric(dataReader, metrichash)
@@ -528,7 +524,7 @@ def createBasic(metrichash, dataReader, dataDisplay, isIndivImgs):
         ColorBy(dataDisplay, ('POINTS', ''))
     return dataReader
 
-def plotLine(infile):
+def plotLine(infile, imageName) :
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     warnings.filterwarnings('ignore')
@@ -547,12 +543,12 @@ def plotLine(infile):
 
     plt.xlabel('Point')
     plt.ylabel(header[1])
-    plt.title(infile.replace(".csv", "").replace("plot_", "") + ' Plot')
+    # plt.title(infile.replace(".csv", "").replace("plot_", "") + ' Plot')
     plt.grid(True)
-    plt.savefig(infile.replace(".csv", "") + ".png")
+    plt.savefig(imageName)
 
 
-def createLine(metrichash, kpi, data_reader, outputDir="."):
+def createLine(metrichash, data_reader, outputDir=".", caseNumber=""):
     resolution = int(metrichash['resolution'])
     try:
         image = metrichash['image']
@@ -581,8 +577,6 @@ def createLine(metrichash, kpi, data_reader, outputDir="."):
     point2=[float(point[3]),float(point[4]),float(point[5])]
     l = PlotOverLine(Input=data_reader, Source='High Resolution Line Source')
     l.PassPartialArrays = 1
-    #l.Source.Point1 = [-0.609570026397705, 1.2191989705897868, 1.5207239668816328]
-    #l.Source.Point2 = [3.044950008392334, 1.21919897058979, 1.5207239668816328]
     l.Source.Point1 = point1
     l.Source.Point2 = point2
     l.Source.Resolution = resolution
@@ -590,9 +584,8 @@ def createLine(metrichash, kpi, data_reader, outputDir="."):
     lDisplay.DiffuseColor = [1.0, 0.0, 0.0]
     lDisplay.Specular = 0
     lDisplay.Opacity = 1
-    
-    
-    # get the line data
+
+    # Get the line data
     pl = servermanager.Fetch(l)
 
     kpifld = metrichash['field']
@@ -600,7 +593,11 @@ def createLine(metrichash, kpi, data_reader, outputDir="."):
     if (image == "plot"):
         if not (os.path.exists(outputDir)):
             os.makedirs(outputDir)
-        csvFileName = outputDir + "/plot_" + kpi + ".csv"
+        if caseNumber:
+            metrichash['imageName'] = metrichash['imageName'].format(int(caseNumber))
+        imageFullPath = outputDir + '/' + metrichash['imageName']
+        imageName, imageExtension = os.path.splitext(imageFullPath)
+        csvFileName = imageName + ".csv"
         f=open(csvFileName,"w")
         f.write("point,"+kpifld)
         if kpiComp:
@@ -623,9 +620,9 @@ def createLine(metrichash, kpi, data_reader, outputDir="."):
             f.write(",".join([str(t), str(dataPoint)])+"\n")
     if image == "plot":
         f.close()
-        plotLine(csvFileName)
-    ave=sum/pl.GetPointData().GetArray(METRIC_INDEX).GetNumberOfTuples()
-    return l, ave
+        plotLine(csvFileName, imageFullPath)
+    ave = sum/pl.GetPointData().GetArray(METRIC_INDEX).GetNumberOfTuples()
+    return l
 
 
 def adjustCamera(view, renderView1, metrichash):
@@ -677,7 +674,7 @@ def adjustCamera(view, renderView1, metrichash):
         renderView1.CameraParallelProjection = int(metrichash["CameraParallelProjection"])
 
 
-def makeAnimation(outputDir, kpi, magnification, deleteFrames=True):
+def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True):
     animationFramesDir = outputDir + '/animFrames'
     if not (os.path.exists(animationFramesDir)):
         os.makedirs(animationFramesDir)
@@ -685,8 +682,9 @@ def makeAnimation(outputDir, kpi, magnification, deleteFrames=True):
     WriteAnimation(animationFramesDir + "/out_" + kpi + ".png", Magnification=magnification, FrameRate=15.0,
                    Compression=False)
 
-    subprocess.call(["convert", "-delay", "15",  "-loop",  "0", animationFramesDir + "/out_" + kpi + ".*.png",
-                     outputDir + "/out_" + kpi + ".gif"])
+    subprocess.call(["convert", "-delay", "15",  "-loop",  "0",
+                     animationFramesDir + "/out_" + kpi + ".*.png",
+                     outputDir + "/" + animationName])
 
     if deleteFrames:
         shutil.rmtree(animationFramesDir)

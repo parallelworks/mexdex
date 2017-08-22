@@ -1,7 +1,7 @@
 import data_IO
 
 
-def setKPIFieldDefaults(metrichash):
+def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
 
     # Set component to "Magnitude" if not given for vector/tensor fields
     if not ('field' in metrichash):
@@ -31,6 +31,13 @@ def setKPIFieldDefaults(metrichash):
         metrichash['invertcolor'] = 'False'
     if not ('opacity' in metrichash):
         metrichash['opacity'] = "1"
+    # Set image number
+    if not('image' == 'None'):
+        if not ('imageName' in metrichash):
+            if metrichash['image'] == "plot":
+                metrichash['imageName'] = "plot_" + kpi + ".png"
+            else:
+                metrichash['imageName'] = "out_" + kpi + ".png"
 
     # Set default streamline properties
     if metrichash['type'] == "StreamLines":
@@ -45,6 +52,10 @@ def setKPIFieldDefaults(metrichash):
 
     if not ('animation' in metrichash):
         metrichash['animation'] = 'False'
+
+    if data_IO.str2bool(metrichash['animation']):
+        if not ('animationName' in metrichash):
+            metrichash['animationName'] = "out_" + kpi + ".gif"
 
     if not ('blender' in metrichash):
         metrichash['blender'] = 'False'

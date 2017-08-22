@@ -9,7 +9,8 @@ import os
 print(sys.argv)
 if len(sys.argv) < 5:
     print("Number of provided arguments: ", len(sys.argv) - 1)
-    print("Usage: pvpython extract.py  <dataFile>  <desiredMetrics.json> <outputDir> <outputMetrics.csv>")
+    print("Usage: pvpython extract.py  <dataFile>  <desiredMetrics.json> <outputDir> "
+          "<outputMetrics.csv> [caseNumber]")
     sys.exit()
 
 
@@ -17,10 +18,9 @@ dataFileAddress = sys.argv[1]
 kpiFileAddress = sys.argv[2]
 outputDir = sys.argv[3]
 metricFile = sys.argv[4]
-
+caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
 
 # Image settings:
-individualImages = True
 magnification = 2
 viewSize = [700, 600]
 backgroundColor = [1, 1, 1]   # set background color to white
@@ -47,7 +47,7 @@ print("Generating KPIs")
 
 # Set the default values for missing fields in the kpihash
 for kpi in kpihash:
-    kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi])
+    kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi], kpi)
     if not (kpihash[kpi]['field'] == 'None'):
         kpihash[kpi] = pvutils.correctfieldcomponent(dataReader, kpihash[kpi])
 
@@ -69,41 +69,46 @@ for kpi in kpihash:
     makeAnim = data_IO.str2bool(metrichash['animation'])
     export2Blender = data_IO.str2bool(metrichash['blender'])
 
-    if individualImages:
-        HideAll()
-        Show(dataReader, renderView1)
-        if kpiimage != "None" and kpiimage != "plot":
-            pvutils.adjustCamera(kpiimage, renderView1, metrichash)
+    HideAll()
+    Show(dataReader, renderView1)
+    if kpiimage != "None" and kpiimage != "plot":
+        pvutils.adjustCamera(kpiimage, renderView1, metrichash)
     
     print(kpi)
     
     ave = []
     if kpitype == "Slice":
-        d = pvutils.createSlice(metrichash, dataReader, readerDisplay, individualImages)
+        d = pvutils.createSlice(metrichash, dataReader, readerDisplay)
     elif kpitype == "Clip":
-        d = pvutils.createClip(metrichash, dataReader, readerDisplay, individualImages)
+        d = pvutils.createClip(metrichash, dataReader, readerDisplay)
     elif kpitype == "Probe":
         d = pvutils.createProbe(metrichash, dataReader)
     elif kpitype == "Line":
-        d,ave = pvutils.createLine(metrichash, kpi, dataReader, outputDir)
+        d = pvutils.createLine(metrichash, dataReader, outputDir, caseNumber)
     elif kpitype == "StreamLines":
-        d = pvutils.createStreamTracer(metrichash, dataReader, readerDisplay, individualImages)
+        d = pvutils.createStreamTracer(metrichash, dataReader, readerDisplay)
     elif kpitype == "Volume":
         d = pvutils.createVolume(metrichash, dataReader)
     elif kpitype == "Basic":
-        d = pvutils.createBasic(metrichash, dataReader, readerDisplay, individualImages)
+        d = pvutils.createBasic(metrichash, dataReader, readerDisplay)
 
     if extractStats:
         pvutils.extractStats(d, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics)
 
-    if individualImages:
-        if kpiimage != "None" and kpiimage != "plot":
-            if not (os.path.exists(outputDir)):
-                os.makedirs(outputDir)
-            SaveScreenshot(outputDir + "/out_" + kpi + ".png", magnification=magnification, quality=100)
+    if kpiimage != "None" and kpiimage != "plot":
+        if not (os.path.exists(outputDir)):
+            os.makedirs(outputDir)
+        if caseNumber:
+            metrichash['imageName'] = metrichash['imageName'].format(int(caseNumber))
+        SaveScreenshot(outputDir + '/' + metrichash['imageName'],
+                       magnification=magnification, quality=100)
 
     if makeAnim:
-        pvutils.makeAnimation(outputDir, kpi, magnification)
+        animationName = metrichash['animationName']
+        if caseNumber:
+            animationName = animationName.format(int(caseNumber))
+
+        pvutils.makeAnimation(outputDir, kpi, magnification, animationName)
 
     if export2Blender:
         blenderContext=metrichash['blendercontext']
