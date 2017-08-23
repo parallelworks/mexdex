@@ -26,10 +26,8 @@ viewSize = [700, 600]
 backgroundColor = [1, 1, 1]   # set background color to white
 
 # Read the desired outputs/metrics from the csv file:
-fp_jsonIn = data_IO.open_file(kpiFileAddress)
-kpihash = json.load(fp_jsonIn)
-kpihash = data_IO.byteify(kpihash)
-fp_jsonIn.close()
+kpihash = metricsJsonUtils.readKPIJsonFile(kpiFileAddress)[0]
+
 print(kpihash)
 
 # disable automatic camera reset on 'Show'

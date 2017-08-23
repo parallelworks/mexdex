@@ -168,49 +168,38 @@ def writeInputParamVals2caselist(cases, inputVarNames):
     return caselist
 
 
-def getOutputParamsFromKPI(kpiFile):
-    fp_jsonIn = data_IO.open_file(kpiFile)
-    kpihash = json.load(fp_jsonIn, object_pairs_hook=OrderedDict)
-    orderPreservedKeys = data_IO.byteify(list(kpihash.keys()))
-    kpihash = data_IO.byteify(kpihash)
-    fp_jsonIn.close()
+def getOutputParamsFromKPI(kpihash, orderPreservedKeys):
     outputParams= []
     for kpi in orderPreservedKeys:
         metrichash = kpihash[kpi]
-        kpitype = metrichash['type']
-
-        if 'extractStats' in metrichash:
-            extractStats = data_IO.str2bool(metrichash['extractStats'])
-        else:
-            extractStats = True
+        extractStats = data_IO.str2bool(metrichash['extractStats'])
 
         if extractStats:
             outputParams.append(kpi)
     return outputParams
 
 
-def getOutImgsFromKPI(kpiFile):
-    fp_jsonIn = data_IO.open_file(kpiFile)
-    kpihash = json.load(fp_jsonIn, object_pairs_hook=OrderedDict)
-    orderPreservedKeys = data_IO.byteify(list(kpihash.keys()))
-    kpihash = data_IO.byteify(kpihash)
-    fp_jsonIn.close()
-    outputPNGs= []
-    outputPNG_types = []
+def getOutImgsFromKPI(kpihash, orderPreservedKeys):
+    imgTitles= []
+    imgNames = []
     for kpi in orderPreservedKeys:
         metrichash = kpihash[kpi]
-        if 'image' in metrichash:
-            kpiimage = metrichash['image']
-        else:
-            kpiimage = "None"
+        imageName = metrichash['imageName']
+        if imageName != "None":
+            imgTitles.append(kpi)
+            imgNames.append(imageName)
+        animation = data_IO.str2bool(metrichash['animation'])
+        if animation:
+            imgTitles.append(kpi)
+            imgNames.append(metrichash['animationName'])
 
-        if kpiimage != "None" and kpiimage != "":
-            outputPNGs.append(kpi)
-            outputPNG_types.append(kpiimage)
-    return outputPNGs,outputPNG_types
+    print(imgTitles)
+    print(imgNames)
+    return imgTitles, imgNames
 
 
-def getOutputParamsStatList(outputParamsFileAddress, outputParamNames, stats2include=['ave','min','max']):
+def getOutputParamsStatList(outputParamsFileAddress, outputParamNames,
+                            stats2include=['ave', 'min', 'max']):
     # If the outputParamsFileAddress exists, read the output variables and their desired stats from file
     if outputParamsFileAddress:
         foutParams = data_IO.open_file(outputParamsFileAddress, 'r')
@@ -317,16 +306,14 @@ def writeOutputParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
     return caselist
 
 
-def writeImgs2caselist(cases, outImgList, imgTypes, basePath, pngsDirRel2BasePath, caselist):
+def writeImgs2caselist(cases, outImgList, imgNames, basePath, pngsDirRel2BasePath, caselist):
     for icase, case in enumerate(cases):
         caseOutStr = ""
         for iPng, pngFile in enumerate(outImgList):
-            if imgTypes[iPng] == "plot":
-                imgPrefix = "plot_"
-            else:
-                imgPrefix = "out_"
+            imageName = imgNames[iPng].format(icase)
 
-            caseOutStr += "," + basePath + "/" + pngsDirRel2BasePath + str(icase) + "/" + imgPrefix + pngFile + ".png"
+            caseOutStr += "," + basePath + "/" + pngsDirRel2BasePath.format(icase) +\
+                          "/" + imageName
         caselist[icase] += caseOutStr
     return caselist
 

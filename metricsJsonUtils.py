@@ -1,4 +1,15 @@
 import data_IO
+import json
+from collections import OrderedDict
+
+
+def readKPIJsonFile(kpiFile):
+    fp_jsonIn = data_IO.open_file(kpiFile)
+    kpihash = json.load(fp_jsonIn, object_pairs_hook=OrderedDict)
+    orderPreservedKeys = data_IO.byteify(list(kpihash.keys()))
+    kpihash = data_IO.byteify(kpihash)
+    fp_jsonIn.close()
+    return kpihash, orderPreservedKeys
 
 
 def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
