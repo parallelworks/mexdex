@@ -2,7 +2,7 @@ import math
 import sys
 import itertools as it
 import data_IO
-import json
+import warnings
 from collections import OrderedDict
 
 def isInt(s):
@@ -121,7 +121,7 @@ def readParamsFile(paramsFile, paramValDelim=','):
 
 
 def generateHeader(inputParamNames, outParamTables, outImgList):
-    num2statTable = {0:'ave', 1:'min', 2:'max'}
+    num2statTable = {0:'ave', 1:'min', 2:'max', 3:'sd'}
     header = []
     for varName in inputParamNames:
         header += "in:" + varName + ","
@@ -168,15 +168,60 @@ def writeInputParamVals2caselist(cases, inputVarNames):
     return caselist
 
 
-def getOutputParamsFromKPI(kpihash, orderPreservedKeys):
-    outputParams= []
-    for kpi in orderPreservedKeys:
-        metrichash = kpihash[kpi]
-        extractStats = data_IO.str2bool(metrichash['extractStats'])
+def genOutputLookupTable(outParamsList):
+    lookupTable = []
+    stat2numTable = {'ave': 0, 'min': 1, 'max': 2, 'sd': 3}
+    for param in outParamsList:
+        if param.find("(") > 0:
+            paramName = param[:param.find("(")]
+            paramName = paramName.lstrip()
+            statStr = param[param.find("(")+1:param.find(")")]
+            statKey = stat2numTable[statStr.lower()]
+            lookupTable.append([paramName, statKey])
+        else:
+            lookupTable.append([param, -1])
+    return lookupTable
 
-        if extractStats:
-            outputParams.append(kpi)
-    return outputParams
+
+def parseOutputType(statStr, isParaviewMetric):
+    statList = []
+    statStrList = [x.strip().lower() for x in statStr.split(",")]
+    stat2numTable = OrderedDict([('ave', 0), ('min', 1), ('max', 2), ('sd', 3)])
+    if statStrList[0].lower() in {"none", "image"}:
+        return statList
+    elif statStrList[0] == "all":
+        statStrList = list(stat2numTable.keys())
+    for statStr in statStrList:
+        if isParaviewMetric:
+            if statStr in stat2numTable:
+                statList.append(stat2numTable[statStr])
+            else:
+                warningMsg = 'Please check the format of stat flag ' \
+                             '("{}" is not acceptable for Paraview metrics). ' \
+                             'Accepted values are: "none", "image", "all", "{}". ' \
+                             'Setting stat flag to "none". ' \
+                    .format(statStr, '", "'.join(list(stat2numTable.keys())))
+                warnings.warn(warningMsg)
+        else:
+            statList.append(-1)
+    return statList
+
+
+def getOutputParamsFromKPI(kpihash, orderPreservedKeys, ignoreSet):
+    outputParams= []
+    lookupTable = []
+    for kpi in orderPreservedKeys:
+        if kpi not in ignoreSet:
+            metrichash = kpihash[kpi]
+            if data_IO.str2bool(metrichash['IsParaviewMetric']):
+                if not data_IO.str2bool(metrichash['extractStats']):
+                    continue
+            outputTypeList = parseOutputType(metrichash['DEoutputFlag'],
+                                             data_IO.str2bool(metrichash['IsParaviewMetric']))
+            for outputType in outputTypeList:
+                outputParams.append(kpi)
+                lookupTable.append([kpi, outputType])
+    return lookupTable
 
 
 def getOutImgsFromKPI(kpihash, orderPreservedKeys):
@@ -184,6 +229,9 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
     imgNames = []
     for kpi in orderPreservedKeys:
         metrichash = kpihash[kpi]
+        if not (data_IO.str2bool(metrichash["IsParaviewMetric"]) or
+                    metrichash['DEoutputFlag'].lower() == "image"):
+            continue
         imageName = metrichash['imageName']
         if imageName != "None":
             imgTitles.append(kpi)
@@ -193,12 +241,10 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
             imgTitles.append(kpi)
             imgNames.append(metrichash['animationName'])
 
-    print(imgTitles)
-    print(imgNames)
     return imgTitles, imgNames
 
 
-def getOutputParamsStatList(outputParamsFileAddress, outputParamNames,
+def getOutputParamsStatListOld(outputParamsFileAddress, outputParamNames,
                             stats2include=['ave', 'min', 'max']):
     # If the outputParamsFileAddress exists, read the output variables and their desired stats from file
     if outputParamsFileAddress:
@@ -239,69 +285,39 @@ def getOutputParamsStatList(outputParamsFileAddress, outputParamNames,
     return outParamsList
 
 
-def genOutputLookupTable(outParamsList):
-    lookupTable = []
-    stat2numTable = {'ave': 0, 'min': 1, 'max': 2}
-    for param in outParamsList:
-        if param.find("(") > 0:
-            paramName = param[:param.find("(")]
-            paramName = paramName.lstrip()
-            statStr = param[param.find("(")+1:param.find(")")]
-            statKey = stat2numTable[statStr.lower()]
-            lookupTable.append([paramName, statKey])
-        else:
-            lookupTable.append([param, -1])
-    return lookupTable
-
-
-def writeOutputParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
-                                  outputParamsFileAddress ):
+def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
+                               kpihash):
     # Read the desired metric from each output file
     for icase, case in enumerate(cases):
         # Read values from the Metrics Extraction file first
         readMECSVFile = False
         if any(param[1] >= 0 for param in paramTable):
             readMECSVFile = True
+
         if readMECSVFile:
-            extractedFile = csvTemplateName.format(icase)
-            fcaseMetrics = data_IO.open_file(extractedFile, 'r')
-            caseOutStr = ""
+            PVcsvAddress = csvTemplateName.format(icase)
+            fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
 
-            for param in paramTable:
-                if param[1] >=0:
-                    param_icase = data_IO.read_float_from_file_pointer(fcaseMetrics, param[0],
-                                                                       ',', param[1])
-                    caseOutStr += "," + str(param_icase)
-            caselist[icase] += caseOutStr
-            fcaseMetrics.close()
-        if outputParamsFileAddress:
-            foutParams = data_IO.open_file(outputParamsFileAddress, 'r')
-            allDesiredOutputs = foutParams.read()
-            allDesiredOutputs = allDesiredOutputs.splitlines()
-            # Read parameters from other files if provided
-            # The format is:
-            # outputName;outputFileNameTemplate;outputFlag;delimitor;locationInFile
-            #
-            # For example:
-            # pressure_drop;results/case_{:d}_pressure_drop.txt;;" ";1
+        for param in paramTable:
+            if param[1] >=0:
+                param_icase = data_IO.read_float_from_file_pointer(
+                    fPVcsv, param[0], ',', param[1])
+            else: # Read parameters from other files if provided
+                metrichash = kpihash[param[0]]
+                dataFile = metrichash['resultFile'].format(icase)
+                dataFileParamFlag = metrichash['DEoutputFlag']
+                dataFileDelimiter = metrichash['delimiter']
+                if not dataFileDelimiter:
+                    dataFileDelimiter = None
+                locnInOutFile = int(metrichash['locationInFile']) - 1 # Start from 0
+                fdataFile = data_IO.open_file(dataFile, 'r')
+                param_icase = data_IO.read_float_from_file_pointer(
+                    fdataFile, dataFileParamFlag, dataFileDelimiter, locnInOutFile)
+                fdataFile.close()
+            caselist[icase] += "," + str(param_icase)
 
-            # outputName;outputFileNameTemplate;delimitor;locationInFile
-            #
-            # For example:
-            # pressure_drop;results/case_{:d}_pressure_drop.txt; ;1
-            caseOutStr = ""
-            for param in paramTable:            
-                if param[1] == -1:
-                    outFile = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 0, 0)
-                    outFile = outFile.format(icase)
-                    foutFile = data_IO.open_file(outFile,'r')
-                    outFileParamFlag = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 1, 0)
-                    outFileDelimiter = data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 2, 0)[1]
-                    locnInOutFile = int(data_IO.read_str_from_strList(allDesiredOutputs,param[0], ";", 3, 0))
-                    param_icase = data_IO.read_float_from_file_pointer(foutFile, outFileParamFlag,
-                                                                       outFileDelimiter, locnInOutFile)
-                    caseOutStr += "," + str(param_icase)
-            caselist[icase] += caseOutStr
+        if readMECSVFile:
+            fPVcsv.close()
 
     return caselist
 
