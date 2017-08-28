@@ -186,3 +186,13 @@ def byteify(input):
             return input.encode('utf-8')
         else:
             return input
+
+
+def correctDelimiterInputStrs(inputDelimiter):
+
+    if sys.version_info[0] < 3:
+        correctedDelimiter = str(inputDelimiter.decode('unicode-escape'))
+    else:
+        correctedDelimiter = bytes(inputDelimiter,'utf-8').decode('unicode_escape')
+
+    return correctedDelimiter
