@@ -37,7 +37,7 @@ parser.add_argument("--CL_paramValueDelimiter", default=',',
                     help='The delimiter between a parameter name and its value in '
                          '<casesListFile> (default:",")')
 
-parser.set_defaults(withParamType=True)
+parser.set_defaults(withParamTag=True)
 
 
 args = parser.parse_args()
