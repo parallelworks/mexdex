@@ -28,7 +28,7 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         if data_IO.str2bool(metrichash['IsParaviewMetric']):
             metrichash['DEXoutputFlag'] = 'all'
         else:
-            metrichash['DEXoutputFlag'] = 'none'
+            metrichash['DEXoutputFlag'] = ''
 
     # If not a Paraview Metric, make sure the information for extracting
     # data/images from a generic file is provided.
@@ -63,6 +63,7 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
     # Set default image properties
     if not ('image' in metrichash):
         metrichash['image'] = 'None'
+        metrichash['imageName'] = 'None'
     if not ('bodyopacity' in metrichash):
         metrichash['bodyopacity'] = "0.3"
     if not ('min' in metrichash):

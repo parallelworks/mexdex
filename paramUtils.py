@@ -131,8 +131,8 @@ def generateHeader(inputParamNames, outParamTables, outImgList):
         if paramNameStat[1] >= 0:
             outStr += "_" + num2statTable[paramNameStat[1]]
         header += outStr
-    for pngFile in outImgList:
-        header += ",img:" + pngFile
+    for imgName in outImgList:
+        header += ",img:" + imgName
     return header
 
 
@@ -229,8 +229,8 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
     imgNames = []
     for kpi in orderPreservedKeys:
         metrichash = kpihash[kpi]
-        if not (data_IO.str2bool(metrichash["IsParaviewMetric"]) or
-                    metrichash['DEXoutputFlag'].lower() == "image"):
+        isParaviewMetric = data_IO.str2bool(metrichash["IsParaviewMetric"])
+        if not (isParaviewMetric or metrichash['DEXoutputFlag'].lower() == "image"):
             continue
         imageName = metrichash['imageName']
         if imageName != "None":
@@ -238,7 +238,7 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
             imgNames.append(imageName)
         animation = data_IO.str2bool(metrichash['animation'])
         if animation:
-            imgTitles.append(kpi)
+            imgTitles.append(kpi+'_animation')
             imgNames.append(metrichash['animationName'])
 
     return imgTitles, imgNames
@@ -322,11 +322,11 @@ def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
     return caselist
 
 
-def writeImgs2caselist(cases, outImgList, imgNames, basePath, pngsDirRel2BasePath, caselist):
+def writeImgs2caselist(cases, imgNames, basePath, pngsDirRel2BasePath, caselist):
     for icase, case in enumerate(cases):
         caseOutStr = ""
-        for iPng, pngFile in enumerate(outImgList):
-            imageName = imgNames[iPng].format(icase)
+        for imageNameTemplate in imgNames:
+            imageName = imageNameTemplate.format(icase)
 
             caseOutStr += "," + basePath + "/" + pngsDirRel2BasePath.format(icase) +\
                           "/" + imageName

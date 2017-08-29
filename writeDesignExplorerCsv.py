@@ -94,7 +94,7 @@ caselist = paramUtils.writeOutParamVals2caselist(cases, metricsFilesNameTemplate
 # Get the list of desired images
 imgList, imgNames = paramUtils.getOutImgsFromKPI(kpihash, orderPreservedKeys)
 
-caselist = paramUtils.writeImgs2caselist(cases, imgList, imgNames, basepath, imagesdir,
+caselist = paramUtils.writeImgs2caselist(cases, imgNames, basepath, imagesdir,
                                          caselist)
 
 # Write the header of the DEX csv file
