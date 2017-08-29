@@ -216,7 +216,7 @@ def getOutputParamsFromKPI(kpihash, orderPreservedKeys, ignoreSet):
             if data_IO.str2bool(metrichash['IsParaviewMetric']):
                 if not data_IO.str2bool(metrichash['extractStats']):
                     continue
-            outputTypeList = parseOutputType(metrichash['DEoutputFlag'],
+            outputTypeList = parseOutputType(metrichash['DEXoutputFlag'],
                                              data_IO.str2bool(metrichash['IsParaviewMetric']))
             for outputType in outputTypeList:
                 outputParams.append(kpi)
@@ -230,7 +230,7 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
     for kpi in orderPreservedKeys:
         metrichash = kpihash[kpi]
         if not (data_IO.str2bool(metrichash["IsParaviewMetric"]) or
-                    metrichash['DEoutputFlag'].lower() == "image"):
+                    metrichash['DEXoutputFlag'].lower() == "image"):
             continue
         imageName = metrichash['imageName']
         if imageName != "None":
@@ -290,11 +290,11 @@ def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
     # Read the desired metric from each output file
     for icase, case in enumerate(cases):
         # Read values from the Metrics Extraction file first
-        readMECSVFile = False
+        readMEXCSVFile = False
         if any(param[1] >= 0 for param in paramTable):
-            readMECSVFile = True
+            readMEXCSVFile = True
 
-        if readMECSVFile:
+        if readMEXCSVFile:
             PVcsvAddress = csvTemplateName.format(icase)
             fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
 
@@ -305,7 +305,7 @@ def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
             else: # Read parameters from other files if provided
                 metrichash = kpihash[param[0]]
                 dataFile = metrichash['resultFile'].format(icase)
-                dataFileParamFlag = metrichash['DEoutputFlag']
+                dataFileParamFlag = metrichash['DEXoutputFlag']
                 dataFileDelimiter = metrichash['delimiter']
                 if not dataFileDelimiter:
                     dataFileDelimiter = None
@@ -316,7 +316,7 @@ def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
                 fdataFile.close()
             caselist[icase] += "," + str(param_icase)
 
-        if readMECSVFile:
+        if readMEXCSVFile:
             fPVcsv.close()
 
     return caselist

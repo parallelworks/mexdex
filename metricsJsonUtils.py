@@ -24,20 +24,20 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
     if not ('IsParaviewMetric' in metrichash):
         metrichash['IsParaviewMetric'] = 'True'
 
-    if not ('DEoutputFlag' in metrichash):
+    if not ('DEXoutputFlag' in metrichash):
         if data_IO.str2bool(metrichash['IsParaviewMetric']):
-            metrichash['DEoutputFlag'] = 'all'
+            metrichash['DEXoutputFlag'] = 'all'
         else:
-            metrichash['DEoutputFlag'] = 'none'
+            metrichash['DEXoutputFlag'] = 'none'
 
     # If not a Paraview Metric, make sure the information for extracting
     # data/images from a generic file is provided.
     if not data_IO.str2bool(metrichash['IsParaviewMetric']):
-        if metrichash['DEoutputFlag'].lower() == "image":
+        if metrichash['DEXoutputFlag'].lower() == "image":
             if not ('imageName' in metrichash):
                 metrichash['imageName'] = "out_" + kpi + ".png"
 
-        if metrichash['DEoutputFlag'].lower() == "animation":
+        if metrichash['DEXoutputFlag'].lower() == "animation":
             if not ('animation' in metrichash):
                 metrichash['animation'] = 'True'
             if not data_IO.str2bool(metrichash['animation']):
@@ -48,12 +48,12 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         else:
             metrichash['animation'] = 'False'
 
-        if not(metrichash['DEoutputFlag'].lower() in {"none", "image", "animation"}):
+        if not(metrichash['DEXoutputFlag'].lower() in {"none", "image", "animation"}):
             if not ('resultFile' in metrichash):
                 warningMsg = 'Please provide resultFile for {}. Setting ' \
-                             '{}.DEoutputFlag to "none".'.format(kpi, kpi)
+                             '{}.DEXoutputFlag to "none".'.format(kpi, kpi)
                 warnings.warn(warningMsg)
-                metrichash['DEoutputFlag'] = 'none'
+                metrichash['DEXoutputFlag'] = 'none'
             if not ("delimiter" in metrichash):
                 metrichash["delimiter"] = ""
             if not ("locationInFile" in metrichash):
@@ -98,7 +98,7 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
             metrichash['extractStats'] = 'True'
 
     if not data_IO.str2bool(metrichash['extractStats']):
-        metrichash['DEoutputFlag'] = 'none'
+        metrichash['DEXoutputFlag'] = 'none'
 
     if not ('animation' in metrichash):
         metrichash['animation'] = 'False'
