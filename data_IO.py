@@ -75,7 +75,8 @@ def read_float_from_file_pointer(file_pointer, flag_str, delimiter=None,
     file_pointer.seek(0)
     for line in file_pointer:
         if textStartsWithExactMath(line, flag_str, delimiter):
-            line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
+            if len(flag_str) > 0:
+                line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
             data = float(line.split(delimiter)[startIndex])
             break
     if not isinstance(data, float):
@@ -91,7 +92,8 @@ def read_int_from_file_pointer(file_pointer, flag_str, delimiter=None,
     file_pointer.seek(0)
     for line in file_pointer:
         if textStartsWithExactMath(line, flag_str, delimiter):
-            line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
+            if len(flag_str) > 0:
+                line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
             data = int(line.split(delimiter)[startIndex])
             break
     if not isinstance(data, int):
