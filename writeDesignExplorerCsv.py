@@ -26,9 +26,9 @@ parser.add_argument("kpiFile",
 parser.add_argument("basePath", help="The path where the DEX csv and html will be put")
 parser.add_argument("DEX_CSVFile", help="The address of the DEX csv file to be generated")
 
-parser.add_argument("--casesList_paramValueDelimiter", default=':',
+parser.add_argument("--casesList_paramValueDelimiter", default=',',
                     help='The delimiter between parameter names and parameter values in '
-                         '<caseListFile> (default:":")')
+                         '<caseListFile> (default:",")')
 parser.add_argument('--excludeParams', default='',
                     help='A comma separated list specifying the parameters to exclude '
                          'from inputs or outputs from in DEX. The default is empty.')
