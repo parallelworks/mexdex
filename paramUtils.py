@@ -339,8 +339,8 @@ def writeImgs2caselist(cases, imgNames, basePath, pngsDirRel2BasePath, caselist)
         for imageNameTemplate in imgNames:
             imageName = imageNameTemplate.format(icase)
 
-            caseOutStr += "," + basePath + "/" + pngsDirRel2BasePath.format(icase) +\
-                          "/" + imageName
+            caseOutStr += "," + basePath + pngsDirRel2BasePath.format(icase) +\
+                          imageName.format(icase)
         caselist[icase] += caseOutStr
     return caselist
 
