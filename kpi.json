@@ -1,0 +1,38 @@
+{
+  "avg_fluid_T": {
+    "IsParaviewMetric": "no",
+    "resultFile": "results/case_{:d}/openfoam/metrics.csv",
+    "delimiter": ",",
+    "DEXoutputFlag": "fluid_T",
+    "locationInFile": "1"
+  },
+  "avg_part_T": {
+    "IsParaviewMetric": "no",
+    "resultFile": "results/case_{:d}/calculix/metrics.csv",
+    "delimiter": ",",
+    "DEXoutputFlag": "part_T",
+    "locationInFile": "1"
+  },
+   "fluid_T": {
+    "opacity": "0.8",
+    "invertcolor": "0",
+    "min": "300",
+    "max": "330",
+    "image": "iso",
+    "colorscale": "Black-Body Radiation",
+    "field": "T",
+    "discretecolors": "15",
+    "bodyopacity": "0.0",
+    "position": "center center 0.00215",
+    "type": "Clip",
+    "invert": "true",
+    "plane": "Z",
+    "animation": "true",
+    "barTitle": "Temperature (K)",
+    "ComponentTitle": "",
+    "FontColor": "0.0 0.0 .0",
+    "FontSize": "14",
+    "LabelFormat": "%4.3g",
+    "extractStats": "false"
+  }
+}

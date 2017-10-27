@@ -13,7 +13,7 @@ parser.add_argument("caseListFile",
                     help="The output file of this function. The address of the file listing "
                          "the parameter names and values for each simulation case per line.")
 
-parser.add_argument("--SR_valueDelimiter", default='_',
+parser.add_argument("--SR_valueDelimiter", default=' ',
                     help='The delimiter to separate multiple values in a list in '
                          '<sweepRunFile> (default:"_")')
 
@@ -21,7 +21,7 @@ parser.add_argument("--SR_paramValueDelimiter", default=';',
                     help='The delimiter between a parameter name and its value in '
                          '<sweepRunFile> (default:";")')
 
-parser.add_argument("--SR_paramsDelimiter", default='|',
+parser.add_argument("--SR_paramsDelimiter", default='\n',
                     help='The delimiter to separate parameter/value pairs from each other in '
                          '<sweepRunFile> (default:"|")')
 

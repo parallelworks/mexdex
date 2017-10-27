@@ -21,7 +21,7 @@ metricFile = sys.argv[4]
 caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
 
 # Image settings:
-magnification = 2
+magnification = 1
 viewSize = [700, 600]
 backgroundColor = [1, 1, 1]   # set background color to white
 
@@ -102,7 +102,8 @@ for kpi in kpihash:
                        magnification=magnification, quality=100)
 
     if makeAnim:
-        animationName = metrichash['animationName']
+        #animationName = metrichash['animationName']
+        animationName = "out_"+kpi+".gif"
         if caseNumber:
             animationName = animationName.format(int(caseNumber))
 

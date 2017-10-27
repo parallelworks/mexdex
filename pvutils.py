@@ -192,6 +192,7 @@ def getReaderTypeFromfileAddress(dataFileAddress):
 def readDataFile(dataFileAddress, dataarray):
 
     readerType = getReaderTypeFromfileAddress(dataFileAddress)
+    print readerType
     if readerType == 'exo':
         # Read the results file : create a new 'ExodusIIReader'
         dataReader = ExodusIIReader(FileName=dataFileAddress)
@@ -517,6 +518,7 @@ def createBasic(metrichash, dataReader, dataDisplay):
     renderView1 = GetActiveViewOrCreate('RenderView')
     bodyopacity=float(metrichash['bodyopacity'])
     dataDisplay.Opacity = bodyopacity
+    dataDisplay.SetRepresentationType('Surface With Edges')
 
     if not (metrichash['field'] == 'None'):
         colorMetric(dataReader, metrichash)
@@ -635,8 +637,8 @@ def adjustCamera(view, renderView1, metrichash):
             camera.SetPosition(0, -1, 0)
         renderView1.ResetCamera()
         # adjust for scale margin
-        camera.SetFocalPoint(camera.GetFocalPoint()[0],camera.GetFocalPoint()[1],camera.GetFocalPoint()[2]-0.25)
-        camera.SetPosition(camera.GetPosition()[0],camera.GetPosition()[1],camera.GetPosition()[2]-1)
+        camera.SetFocalPoint(camera.GetFocalPoint()[0],camera.GetFocalPoint()[1],camera.GetFocalPoint()[2]-0.0025)
+        #camera.SetPosition(camera.GetPosition()[0],camera.GetPosition()[1],camera.GetPosition()[2]-1)
         camera.Elevation(45)
         camera.Azimuth(45)
     elif view == "+X" or view == "+x" or view == "back": 
@@ -682,7 +684,7 @@ def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=Tru
     WriteAnimation(animationFramesDir + "/out_" + kpi + ".png", Magnification=magnification, FrameRate=15.0,
                    Compression=False)
 
-    subprocess.call(["convert", "-delay", "15",  "-loop",  "0",
+    subprocess.call(["convert", "-delay", "15",  "-loop",  "0", "-limit", "memory", "2MB", "-limit", "map","2MB","-verbose",
                      animationFramesDir + "/out_" + kpi + ".*.png",
                      outputDir + "/" + animationName])
 
