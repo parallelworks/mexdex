@@ -16,6 +16,9 @@ def readKPIJsonFile(kpiFile):
 
 def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
 
+    if not ('sense' in metrichash):
+        metrichash['sense'] = None
+
     # Set component to "Magnitude" if not given for vector/tensor fields
     if not ('field' in metrichash):
         metrichash['field'] = 'None'
