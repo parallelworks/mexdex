@@ -17,6 +17,7 @@ if len(sys.argv) < 5:
 dataFileAddress = sys.argv[1]
 kpiFileAddress = sys.argv[2]
 outputDir = sys.argv[3]
+outputDir = os.path.join(outputDir, '')
 metricFile = sys.argv[4]
 caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
 
@@ -95,15 +96,15 @@ for kpi in kpihash:
 
     if kpiimage != "None" and kpiimage != "plot":
         if not (os.path.exists(outputDir)):
-            os.makedirs(outputDir)
+            if outputDir:
+                os.makedirs(outputDir)
         if caseNumber:
             metrichash['imageName'] = metrichash['imageName'].format(int(caseNumber))
-        SaveScreenshot(outputDir + '/' + metrichash['imageName'],
+        SaveScreenshot(outputDir + metrichash['imageName'],
                        magnification=magnification, quality=100)
 
     if makeAnim:
-        #animationName = metrichash['animationName']
-        animationName = "out_"+kpi+".gif"
+        animationName = metrichash['animationName']
         if caseNumber:
             animationName = animationName.format(int(caseNumber))
 

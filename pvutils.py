@@ -192,7 +192,6 @@ def getReaderTypeFromfileAddress(dataFileAddress):
 def readDataFile(dataFileAddress, dataarray):
 
     readerType = getReaderTypeFromfileAddress(dataFileAddress)
-    print readerType
     if readerType == 'exo':
         # Read the results file : create a new 'ExodusIIReader'
         dataReader = ExodusIIReader(FileName=dataFileAddress)
@@ -518,7 +517,6 @@ def createBasic(metrichash, dataReader, dataDisplay):
     renderView1 = GetActiveViewOrCreate('RenderView')
     bodyopacity=float(metrichash['bodyopacity'])
     dataDisplay.Opacity = bodyopacity
-    dataDisplay.SetRepresentationType('Surface With Edges')
 
     if not (metrichash['field'] == 'None'):
         colorMetric(dataReader, metrichash)
@@ -594,10 +592,11 @@ def createLine(metrichash, data_reader, outputDir=".", caseNumber=""):
     kpiComp = metrichash['fieldComponent']
     if (image == "plot"):
         if not (os.path.exists(outputDir)):
-            os.makedirs(outputDir)
+            if outputDir:
+                os.makedirs(outputDir)
         if caseNumber:
             metrichash['imageName'] = metrichash['imageName'].format(int(caseNumber))
-        imageFullPath = outputDir + '/' + metrichash['imageName']
+        imageFullPath = outputDir + metrichash['imageName']
         imageName, imageExtension = os.path.splitext(imageFullPath)
         csvFileName = imageName + ".csv"
         f=open(csvFileName,"w")
@@ -677,16 +676,18 @@ def adjustCamera(view, renderView1, metrichash):
 
 
 def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True):
-    animationFramesDir = outputDir + '/animFrames'
+    animationFramesDir = outputDir + 'animFrames'
+    animationFramesDir = os.path.join(animationFramesDir, '')
     if not (os.path.exists(animationFramesDir)):
         os.makedirs(animationFramesDir)
 
-    WriteAnimation(animationFramesDir + "/out_" + kpi + ".png", Magnification=magnification, FrameRate=15.0,
+    WriteAnimation(animationFramesDir + "out_" + kpi + ".png",
+                   Magnification=magnification, FrameRate=15.0,
                    Compression=False)
 
-    subprocess.call(["convert", "-delay", "15",  "-loop",  "0", "-limit", "memory", "2MB", "-limit", "map","2MB","-verbose",
-                     animationFramesDir + "/out_" + kpi + ".*.png",
-                     outputDir + "/" + animationName])
+    subprocess.call(["convert", "-delay", "15",  "-loop",  "0",
+                     animationFramesDir + "out_" + kpi + ".*.png",
+                     outputDir + animationName])
 
     if deleteFrames:
         shutil.rmtree(animationFramesDir)
@@ -695,7 +696,7 @@ def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=Tru
 def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
 
     blenderFramesDir = outputDir + kpi + '_blender'
-
+    blenderFramesDir = os.path.join(blenderFramesDir, '')
     if not (os.path.exists(blenderFramesDir)):
         os.makedirs(blenderFramesDir)
 
@@ -705,12 +706,12 @@ def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
         renderView1 = GetActiveViewOrCreate('RenderView')
         renderView1.ViewTime = firstTimeStep
         for num, time in enumerate(TimeSteps):
-            name_solo = blenderFramesDir + '/' + str(num) + '_solo.x3d'
+            name_solo = blenderFramesDir + str(num) + '_solo.x3d'
             Show(metricObj, renderView1)
             Hide(dataReader, renderView1)
             ExportView(name_solo, view=renderView1)
             if renderBody == "true":
-                name_body = blenderFramesDir + '/' + str(num) + '_body.x3d'
+                name_body = blenderFramesDir + str(num) + '_body.x3d'
                 Show(dataReader, renderView1)
                 Hide(metricObj, renderView1)
                 ExportView(name_body, view=renderView1)
@@ -718,7 +719,7 @@ def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
             animationScene1.GoToNext()
     except:
         renderView1 = GetActiveViewOrCreate('RenderView')
-        name_body = blenderFramesDir + '/' + 'body.x3d'
+        name_body = blenderFramesDir + 'body.x3d'
         Show(dataReader, renderView1)
         ExportView(name_body, view=renderView1)
         
@@ -727,11 +728,11 @@ def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
             dataReaderTmp = readDataFile(i, None)
             renderViewTmp = CreateView('RenderView')
             readerDisplayTmp = Show(dataReaderTmp, renderViewTmp)
-            name_body = blenderFramesDir + '/' + os.path.splitext(os.path.basename(i))[0] + '.x3d'
+            name_body = blenderFramesDir + os.path.splitext(os.path.basename(i))[0] + '.x3d'
             ExportView(name_body, view=renderViewTmp)
 
     # tar the directory
-    data_IO.tarDirectory(blenderFramesDir + ".tar", blenderFramesDir)
+    data_IO.tarDirectory(os.path.dirname(blenderFramesDir) + ".tar", blenderFramesDir)
     shutil.rmtree(blenderFramesDir)
 
 def saveSTLfile(renderView,filename,magnification,quality):

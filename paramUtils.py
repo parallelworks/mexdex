@@ -233,13 +233,13 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
         if not (isParaviewMetric or metrichash['DEXoutputFlag'].lower() == "image"):
             continue
         imageName = metrichash['imageName']
+        animation = data_IO.str2bool(metrichash['animation'])
+        if animation:
+            imgTitles.append(kpi + '_animation')
+            imgNames.append(metrichash['animationName'])
         if imageName != "None":
             imgTitles.append(kpi)
             imgNames.append(imageName)
-        animation = data_IO.str2bool(metrichash['animation'])
-        if animation:
-            imgTitles.append(kpi+'_animation')
-            imgNames.append(metrichash['animationName'])
 
     return imgTitles, imgNames
 
@@ -285,39 +285,50 @@ def getOutputParamsStatListOld(outputParamsFileAddress, outputParamNames,
     return outParamsList
 
 
-def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist,
-                               kpihash):
-    # Read the desired metric from each output file
+def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
+
+    outParamsList = []
+
+    # Read values from the Metrics Extraction file first
+    readMEXCSVFile = False
+
+    if any(param[1] >= 0 for param in paramTable):
+        readMEXCSVFile = True
+
+    if readMEXCSVFile:
+        PVcsvAddress = csvTemplateName.format(caseNumber)
+        fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
+
+    for param in paramTable:
+        if param[1] >= 0:
+            param_icase = data_IO.read_float_from_file_pointer(
+                fPVcsv, param[0], ',', param[1])
+        else:  # Read parameters from other files if provided
+            metrichash = kpihash[param[0]]
+            dataFile = metrichash['resultFile'].format(caseNumber)
+            dataFileParamFlag = metrichash['DEXoutputFlag']
+            dataFileDelimiter = metrichash['delimiter']
+            if not dataFileDelimiter:
+                dataFileDelimiter = None
+            locnInOutFile = int(metrichash['locationInFile']) - 1  # Start from 0
+            fdataFile = data_IO.open_file(dataFile, 'r')
+            param_icase = data_IO.read_float_from_file_pointer(
+                fdataFile, dataFileParamFlag, dataFileDelimiter, locnInOutFile)
+            fdataFile.close()
+        outParamsList.append(str(param_icase))
+
+    if readMEXCSVFile:
+        fPVcsv.close()
+    return outParamsList
+
+
+def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist, kpihash):
+
+    # Read the desired metric from output file(s) for each case
     for icase, case in enumerate(cases):
-        # Read values from the Metrics Extraction file first
-        readMEXCSVFile = False
-        if any(param[1] >= 0 for param in paramTable):
-            readMEXCSVFile = True
-
-        if readMEXCSVFile:
-            PVcsvAddress = csvTemplateName.format(icase)
-            fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
-
-        for param in paramTable:
-            if param[1] >=0:
-                param_icase = data_IO.read_float_from_file_pointer(
-                    fPVcsv, param[0], ',', param[1])
-            else: # Read parameters from other files if provided
-                metrichash = kpihash[param[0]]
-                dataFile = metrichash['resultFile'].format(icase)
-                dataFileParamFlag = metrichash['DEXoutputFlag']
-                dataFileDelimiter = metrichash['delimiter']
-                if not dataFileDelimiter:
-                    dataFileDelimiter = None
-                locnInOutFile = int(metrichash['locationInFile']) - 1 # Start from 0
-                fdataFile = data_IO.open_file(dataFile, 'r')
-                param_icase = data_IO.read_float_from_file_pointer(
-                    fdataFile, dataFileParamFlag, dataFileDelimiter, locnInOutFile)
-                fdataFile.close()
-            caselist[icase] += "," + str(param_icase)
-
-        if readMEXCSVFile:
-            fPVcsv.close()
+        outparamList = readOutParamsForCase(paramTable, csvTemplateName,
+                                            icase, kpihash)
+        caselist[icase] += "," + ",".join(outparamList)
 
     return caselist
 
@@ -328,8 +339,8 @@ def writeImgs2caselist(cases, imgNames, basePath, pngsDirRel2BasePath, caselist)
         for imageNameTemplate in imgNames:
             imageName = imageNameTemplate.format(icase)
 
-            caseOutStr += "," + basePath + "/" + pngsDirRel2BasePath.format(icase) +\
-                          "/" + imageName
+            caseOutStr += "," + basePath + pngsDirRel2BasePath.format(icase) +\
+                          imageName.format(icase)
         caselist[icase] += caseOutStr
     return caselist
 

@@ -38,7 +38,6 @@ echo "basedir is:" $basedir
 # Works with both python2 and python3 
 python  models/mexdex/writeDesignExplorerCsv.py \
         --casesList_paramValueDelimiter ","   \
-	--imagesDirectory "results/case_{:d}/openfoam/png" \
 	$caseslistFile $desiredMetricsFile  $basedir output.csv
 mv output.csv $outcsv
 

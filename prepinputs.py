@@ -61,6 +61,6 @@ caselist = paramUtils.generate_caselist(cases, pnameValDelimiter=CL_paramValueDe
 
 casel = "\n".join(caselist)
 
-f = open(casesListFile, "w")
+f = data_IO.open_file(casesListFile, "w")
 f.write(casel)
 f.close()

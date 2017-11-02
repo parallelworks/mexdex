@@ -19,6 +19,8 @@
     "min": "300",
     "max": "330",
     "image": "iso",
+	"imageName":"results/case_{:d}/openfoam/png/out_fluid_T.png",
+	"animationName":"results/case_{:d}/openfoam/png/out_fluid_T.gif",
     "colorscale": "Black-Body Radiation",
     "field": "T",
     "discretecolors": "15",
@@ -34,5 +36,30 @@
     "FontSize": "14",
     "LabelFormat": "%4.3g",
     "extractStats": "false"
+  },
+   "part_T": {
+    "opacity": "0.6",
+    "invertcolor": "0",
+    "min": "300",
+    "max": "350",
+    "image": "iso",
+	"imageName":"results/case_{:d}/calculix/png/out_part_T.png",
+	"animationName":"results/case_{:d}/calculix/png/out_part_T.gif",
+    "colorscale": "Cold and Hot",
+    "field": "NT",
+    "discretecolors": "15",
+    "bodyopacity": "0.0",
+    "position": "center center 0.0021",
+    "type": "Clip",
+    "invert": "true",
+    "plane": "Z",
+    "animation": "true",
+    "barTitle": "Temperature (K)",
+    "ComponentTitle": "",
+    "FontColor": "0.0 0.0 .0",
+    "FontSize": "14",
+    "LabelFormat": "%4.3g",
+    "extractStats": "false"
   }
 }
+
