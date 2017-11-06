@@ -8,6 +8,10 @@ def xstr(s):
     return '' if s is None else str(s)
 
 
+def upperfirst(x):
+    return x[0].upper() + x[1:]
+
+
 def removeLeadSpacesFromStrList(strList):
     for iLine, line in enumerate(strList):
         strList[iLine] = strList[iLine].lstrip()

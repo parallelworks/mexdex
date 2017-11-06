@@ -3,6 +3,8 @@ import sys
 import itertools as it
 import data_IO
 import warnings
+import re
+
 from collections import OrderedDict
 
 def isInt(s):
@@ -35,8 +37,8 @@ def expandVars(v, RangeDelimiter = ':'):
     v = ','.join(frange(min, max, step))
     return v
 
-def readCases(params, namesdelimiter=";", valsdelimiter="_",paramsdelimiter = "\n", withParamType = True):
-    with open(params) as f:
+def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter = "\n", withParamType = True):
+    with open(paramsFile) as f:
         content = f.read().split(paramsdelimiter)
         if content[-1] == "\n":
             del content[-1]
@@ -369,6 +371,7 @@ def writeXMLPWfile(case, paramTypes, xmlFile, helpStr = 'Whitespace delimited or
     paramsBytype = {}
     paramsSortedBytype = sorted(paramTypes.items())
     paramsTypeVal = mergeParamTypesParamValsDict(paramTypes, paramVals)
+    paramsTypeVal = OrderedDict(sorted(paramsTypeVal.items()))
 
     print(list(paramVals.keys()))
     unitStr = ""
@@ -397,8 +400,10 @@ def writeXMLPWfile(case, paramTypes, xmlFile, helpStr = 'Whitespace delimited or
                     unitStr = ""
             if paramDict['type'] == sectionName:
                 pVal = paramDict['value']
+                paramLabel = re.sub(r"(\w)([A-Z])", r"\1 \2", paramName)
+                paramLabel = data_IO.upperfirst(paramLabel)
                 f.write("\t\t\t<param name=\'"+ paramName + "\' type=\'text\' value=\'" + str(pVal) +
-                        "\' label=\'" + paramName + unitStr +"\' help=\'" + helpStr + "\' width=\'33.3%\' argument=\'"
+                        "\' label=\'" + paramLabel + unitStr +"\' help=\'" + helpStr + "\' width=\'33.3%\' argument=\'"
                         + sectionName + "\'>\n")
                 f.write("\t\t\t</param>\n")
         f.write("\t\t</section> \n")
