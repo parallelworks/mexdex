@@ -1,5 +1,6 @@
 import sys
 import data_IO
+import paramUtils
 
 # Input arguments:
 
@@ -13,15 +14,19 @@ caseListFileName = sys.argv[1]
 simFilesDir = sys.argv[2]
 simFileRootName = sys.argv[3]
 
+cases = paramUtils.readParamsFile(caseListFileName)
 
-cl_fp = data_IO.open_file(caseListFileName)
-for i, line in enumerate(cl_fp):
-    line = line.replace(",", "\n")
-    line = line.replace("=", "  ")
+for i, caseParams in enumerate(cases):
+    line = ''
+    for iParamValDict in caseParams:
+        print(iParamValDict)
+        line += (list(iParamValDict.keys())[0] + ' ' +
+                  list(iParamValDict.values())[0] + '\n')
+    print(type(caseParams))
+    print(caseParams)
     simFileAddress = simFilesDir + "/" + simFileRootName + str(i) + ".in"
     simf = data_IO.open_file(simFileAddress, "w")
     simf.write(line)
     simf.write("\n")
     simf.close()
 
-cl_fp.close()

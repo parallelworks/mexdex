@@ -23,7 +23,6 @@ fi
 
 # Works with both python2 and python3 
 python      mexdex/writeDesignExplorerCsv.py \
-	--casesList_paramValueDelimiter "=" \
 	--imagesDirectory $pngOutDirRoot{:d} \
 	--MEXCsvPathTemplate  $caseDirRoot{:d}/metrics.csv \
 	$caseslistFile $metrics_json $basedir $outcsv
