@@ -232,14 +232,14 @@ def getOutImgsFromKPI(kpihash, orderPreservedKeys):
         isParaviewMetric = data_IO.str2bool(metrichash["IsParaviewMetric"])
         if not (isParaviewMetric or metrichash['DEXoutputFlag'].lower() == "image"):
             continue
-        imageName = metrichash['imageName']
-        if imageName != "None":
-            imgTitles.append(kpi)
-            imgNames.append(imageName)
         animation = data_IO.str2bool(metrichash['animation'])
         if animation:
             imgTitles.append(kpi+'_animation')
             imgNames.append(metrichash['animationName'])
+        imageName = metrichash['imageName']
+        if imageName != "None":
+            imgTitles.append(kpi)
+            imgNames.append(imageName)
 
     return imgTitles, imgNames
 
