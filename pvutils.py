@@ -58,6 +58,8 @@ def getfieldsfromkpihash(kpihash):
     for kpi in kpihash:
         if 'field' in kpihash[kpi]:
             cellsarrays.append(kpihash[kpi]['field'])
+        if 'colorByField' in kpihash[kpi]:
+            cellsarrays.append(kpihash[kpi]['colorByField'])
 
     ca = set(cellsarrays)
     cellsarrays = list(ca)
@@ -368,7 +370,7 @@ def createSlice(metrichash, dataReader, dataDisplay):
     s.SliceType.Normal = planeNormalFromName(plane)
     sDisplay = Show(s, renderView1)
     sDisplay.ColorArrayName = [None, '']
-    sDisplay.SetRepresentationType('Surface')
+    sDisplay.SetRepresentationType(metrichash['representationType']) 
     sDisplay.DiffuseColor = [0.0, 1.0, 0.0]
     sDisplay.Specular = 0
     sDisplay.Opacity = opacity
@@ -421,7 +423,7 @@ def createStreamTracer(metrichash, data_reader, data_display):
     # show data in view
     tubeDisplay = Show(tube, renderView1)
     # trace defaults for the display properties.
-    tubeDisplay.Representation = 'Surface'
+    tubeDisplay.Representation = metrichash['representationType'] 
     tubeDisplay.ColorArrayName = [None, '']
     tubeDisplay.EdgeColor = [0.0, 0.0, 0.0]
     tubeDisplay.DiffuseColor = [0.0, 1.0, 0.0]
@@ -439,6 +441,40 @@ def createStreamTracer(metrichash, data_reader, data_display):
     except:
         pass
     return tube
+
+
+def createWarpbyVector(metrichash, data_reader, data_display):
+    # The field should be a vector
+    kpifld = metrichash['field']
+    arrayInfo = data_reader.PointData[kpifld]
+    if isfldScalar(arrayInfo):
+        print('Error: The field for warpByVector type should be a vector. '
+              'Please check kpi file.')
+        sys.exit(1)
+
+    renderView1 = GetActiveViewOrCreate('RenderView')
+
+    opacity = float(metrichash['opacity'])
+    bodyopacity = float(metrichash['bodyopacity'])
+    data_display.Opacity = bodyopacity
+    data_display.ColorArrayName = ['POINTS', '']
+
+    # create a new 'Warp By Vector'
+    s = WarpByVector(Input=data_reader)
+    s.Vectors = ['POINTS', kpifld]
+    s.ScaleFactor = float(metrichash['scaleFactor'])
+
+    sDisplay = Show(s, renderView1)
+    sDisplay.Representation = metrichash['representationType']
+    sDisplay.ColorArrayName = [None, '']
+    sDisplay.EdgeColor = [0.0, 0.0, 0.0]
+    sDisplay.Opacity = opacity
+
+    if 'colorByField' in metrichash:
+        metrichash['field'] = metrichash['colorByField']
+        if 'colorByFieldComponent' in metrichash:
+            metrichash['fieldComponent'] = metrichash['colorByFieldComponent']
+    colorMetric(s, metrichash)
 
 
 def createClip(metrichash, data_reader, data_display):
@@ -464,7 +500,7 @@ def createClip(metrichash, data_reader, data_display):
     s.ClipType.Normal = planeNormalFromName(plane)
     sDisplay = Show(s, renderView1)
     sDisplay.ColorArrayName = [None, '']
-    sDisplay.SetRepresentationType('Surface')
+    sDisplay.SetRepresentationType(metrichash['representationType']) 
     sDisplay.DiffuseColor = [0.0, 1.0, 0.0]
     sDisplay.Specular = 0
     sDisplay.Opacity = opacity
@@ -506,7 +542,7 @@ def createVolume(metrichash, data_reader):
     c.InsideOut = 1
     cDisplay = Show(c, renderView1)
     cDisplay.ColorArrayName = ['Points', metrichash['field']]
-    cDisplay.SetRepresentationType('Surface')
+    cDisplay.SetRepresentationType(metrichash['representationType']) 
     cDisplay.DiffuseColor = [1.0, 1.0, 0.0]
     cDisplay.Specular = 0
     cDisplay.Opacity = 0.1

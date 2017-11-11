@@ -78,6 +78,8 @@ for kpi in kpihash:
     ave = []
     if kpitype == "Slice":
         d = pvutils.createSlice(metrichash, dataReader, readerDisplay)
+    elif kpitype == "WarpByVector":
+        d = pvutils.createWarpbyVector(metrichash, dataReader, readerDisplay)
     elif kpitype == "Clip":
         d = pvutils.createClip(metrichash, dataReader, readerDisplay)
     elif kpitype == "Probe":

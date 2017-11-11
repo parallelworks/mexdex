@@ -81,6 +81,8 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         metrichash['invertcolor'] = 'False'
     if not ('opacity' in metrichash):
         metrichash['opacity'] = "1"
+    if not ('representationType' in metrichash):
+        metrichash['representationType'] = 'Surface'
 
     # Set image name
     if not('image' == 'None'):
@@ -122,5 +124,9 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
             metrichash['blenderbody'] = metrichash['blenderbody'].split(",")
         except:
             metrichash['blenderbody'] = False
+
+    if metrichash['type'] == "warpByVector":
+        if not ('scaleFactor' in metrichash):
+            metrichash['scaleFactor'] = 1
 
     return metrichash
