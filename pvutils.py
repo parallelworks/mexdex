@@ -732,7 +732,8 @@ def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
             ExportView(name_body, view=renderViewTmp)
 
     # tar the directory
-    data_IO.tarDirectory(os.path.dirname(blenderFramesDir) + ".tar", blenderFramesDir)
+    data_IO.tarDirectory(os.path.dirname(blenderFramesDir) + ".tar",
+                         os.path.dirname(blenderFramesDir))
     shutil.rmtree(blenderFramesDir)
 
 def saveSTLfile(renderView,filename,magnification,quality):
