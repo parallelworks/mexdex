@@ -125,7 +125,8 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         except:
             metrichash['blenderbody'] = False
 
-    if metrichash['type'] == "warpByVector":
+    if metrichash['type'] == "WarpByVector":
+        metrichash['extractStats'] = 'False'
         if not ('scaleFactor' in metrichash):
             metrichash['scaleFactor'] = 1
 
