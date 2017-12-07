@@ -191,7 +191,7 @@ def getReaderTypeFromfileAddress(dataFileAddress):
     return readerType
 
 
-def readDataFile(dataFileAddress, dataarray):
+def readDataFile(dataFileAddress, dataarray, convert2cellData=False):
 
     readerType = getReaderTypeFromfileAddress(dataFileAddress)
     if readerType == 'exo':
@@ -221,6 +221,12 @@ def readDataFile(dataFileAddress, dataarray):
     elif readerType == 'stl':
         dataReader = STLReader(FileNames=[dataFileAddress])
 
+    if convert2cellData:
+        # create a new 'Cell Data to Point Data'
+        print("*** Converting all Cell Data to Point Data ***")
+        dataReaderPointData = CellDatatoPointData(Input=dataReader)
+        return dataReaderPointData
+        
     return dataReader
 
 
@@ -531,9 +537,16 @@ def createProbe(metrichash, data_reader):
     return p
 
 
-def createVolume(metrichash, data_reader):
-    bounds = [float(x) for x in metrichash['position'].split(" ")]
+def createVolume(metrichash, data_reader, data_display):
+    camera = GetActiveCamera()
     renderView1 = GetActiveViewOrCreate('RenderView')
+
+    bounds = [float(x) for x in metrichash['position'].split(" ")]
+    opacity = float(metrichash['opacity'])
+    bodyopacity = float(metrichash['bodyopacity'])
+
+    data_display.Opacity = bodyopacity
+    data_display.ColorArrayName = ['POINTS', '']
     c = Clip(Input=data_reader)
     c.ClipType = 'Box'
     # (xmin,xmax,ymin,ymax,zmin,zmax)
@@ -545,7 +558,8 @@ def createVolume(metrichash, data_reader):
     cDisplay.SetRepresentationType(metrichash['representationType']) 
     cDisplay.DiffuseColor = [1.0, 1.0, 0.0]
     cDisplay.Specular = 0
-    cDisplay.Opacity = 0.1
+    cDisplay.Opacity = opacity 
+    colorMetric(c, metrichash)
     return c
 
 def createBasic(metrichash, dataReader, dataDisplay):

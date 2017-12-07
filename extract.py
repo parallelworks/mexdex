@@ -10,7 +10,7 @@ print(sys.argv)
 if len(sys.argv) < 5:
     print("Number of provided arguments: ", len(sys.argv) - 1)
     print("Usage: pvpython extract.py  <dataFile>  <desiredMetrics.json> <outputDir> "
-          "<outputMetrics.csv> [caseNumber]")
+          "<outputMetrics.csv> [caseNumber]  [cellData]")
     sys.exit()
 
 
@@ -20,6 +20,7 @@ outputDir = sys.argv[3]
 outputDir = os.path.join(outputDir, '')
 metricFile = sys.argv[4]
 caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
+convert2cellData = data_IO.str2bool(data_IO.setOptionalSysArgs(sys.argv, "False", 6))
 
 # Image settings:
 magnification = 2
@@ -36,7 +37,7 @@ paraview.simple._DisableFirstRenderCameraReset()
 
 # Read data file
 data2Read = pvutils.getfieldsfromkpihash(kpihash)
-dataReader = pvutils.readDataFile(dataFileAddress, data2Read)
+dataReader = pvutils.readDataFile(dataFileAddress, data2Read, convert2cellData)
 
 # Initialize renderView and display
 renderView1, readerDisplay = pvutils.initRenderView(dataReader, viewSize,
@@ -89,7 +90,7 @@ for kpi in kpihash:
     elif kpitype == "StreamLines":
         d = pvutils.createStreamTracer(metrichash, dataReader, readerDisplay)
     elif kpitype == "Volume":
-        d = pvutils.createVolume(metrichash, dataReader)
+        d = pvutils.createVolume(metrichash, dataReader, readerDisplay)
     elif kpitype == "Basic":
         d = pvutils.createBasic(metrichash, dataReader, readerDisplay)
 
