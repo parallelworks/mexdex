@@ -119,23 +119,24 @@ def extractStatsOld(d, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics, ave=[]):
 
 
 def extractStats(dataSource, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics):
-    # If kpifield is a vector, add a calculater on top and extract the component of the vector
-    # as a scalar
-    
+    # If kpifield is a vector, add a calculator on top and extract the component of the vector
+    # as a scalar. Also, add a calculator for scalar data since this resolves a ParaView
+    # bug/problem with extracting data directly from exo files
+
     arrayInfo = dataSource.PointData[kpifield]
+    # create a new 'Calculator'
     if isfldScalar(arrayInfo):
         statVarName = kpifield
     else:
-        # create a new 'Calculator'
         statVarName = kpifield + '_' + kpiComp
-        calc1 = Calculator(Input=dataSource)
-        calc1.ResultArrayName = statVarName
-        if kpiComp == 'Magnitude':
-            calc1.Function = 'mag('+kpifield+')'
-        else:
-            calc1.Function = calc1.ResultArrayName
-        UpdatePipeline()
-        dataSource = calc1
+    calc1 = Calculator(Input=dataSource)
+    calc1.ResultArrayName = statVarName
+    if kpiComp == 'Magnitude':
+        calc1.Function = 'mag('+kpifield+')'
+    else:
+        calc1.Function = calc1.ResultArrayName
+    UpdatePipeline()
+    dataSource = calc1
 
     # create a new 'Descriptive Statistics'
     dStats = DescriptiveStatistics(Input=dataSource, ModelInput=None)
