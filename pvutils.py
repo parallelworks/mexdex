@@ -118,7 +118,7 @@ def extractStatsOld(d, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics, ave=[]):
     fp_csv_metrics.write(",".join([kpi, str(average), str(datarange[0]),str(datarange[1])]) + "\n")
 
 
-def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics,statsTag):
+def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics,statsTag, time):
     for iStat in range(numStats):
         statName = dStatsStatsInfo.GetArrayInformation(iStat).GetName()
         statValue = dStatsStatsInfo.GetArrayInformation(iStat).GetComponentRange(0)[0]
@@ -130,9 +130,9 @@ def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics,statsTag):
             average = statValue
         elif statName == 'Standard Deviation':
             stanDev = statValue
-
     fp_csv_metrics.write(
-        ",".join([statsTag, str(average), str(minimum), str(maxaximum), str(stanDev)]) + "\n")
+        ",".join([statsTag, str(average), str(minimum), str(maxaximum), str(stanDev),
+                  "{:f}".format(time)]) + "\n")
 
 
 def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
@@ -216,16 +216,13 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
         dStatsDataInfo = dStats.GetDataInformation()
         dStatsStatsInfo = dStatsDataInfo.GetRowDataInformation()
         numStats = dStatsDataInfo.GetRowDataInformation().GetNumberOfArrays()
+        statTag = kpi
+        writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag, t)
 
-        if len(Times)==1:
-            statTag = kpi
-        else:
-            statTag = kpi + "_{:f}".format(t)
-        writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag)
-
+    ########################################################
     # Set view back to the last view
-    renderView1 = setFrame2latestTime(renderView1)
 
+    renderView1 = setFrame2latestTime(renderView1)
     # Delete the second layout after writing all the statistics
     Delete(spreadSheetView1)
     del spreadSheetView1

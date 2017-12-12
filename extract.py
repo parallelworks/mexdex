@@ -52,7 +52,7 @@ for kpi in kpihash:
         kpihash[kpi] = pvutils.correctfieldcomponent(dataReader, kpihash[kpi])
 
 fp_csv_metrics = data_IO.open_file(metricFile, "w")
-fp_csv_metrics.write(",".join(['metric','ave','min','max','sd'])+"\n")
+fp_csv_metrics.write(",".join(['metric','ave','min','max','sd','time'])+"\n")
 
 renderView1.InteractionMode = '2D'
 renderView1.OrientationAxesVisibility = 0
