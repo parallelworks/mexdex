@@ -174,44 +174,26 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
     # when switching to different time points at the end.
 
     CreateLayout('Layout #2')
-
-    # set active view
     SetActiveView(None)
-
-    # Create a new 'SpreadSheet View'
     spreadSheetView1 = CreateView('SpreadSheetView')
     spreadSheetView1.ColumnToSort = ''
     spreadSheetView1.BlockSize = 1024L
-
-    # get layout
     layout2 = GetLayout()
     layout2.AssignView(0, spreadSheetView1)
     dStatsDisplay = Show(dStats, spreadSheetView1)
-
-    # Create a new 'SpreadSheet View'
     spreadSheetView2 = CreateView('SpreadSheetView')
     spreadSheetView2.ColumnToSort = ''
     spreadSheetView2.BlockSize = 1024L
     layout2.AssignView(2, spreadSheetView2)
-
-    # show data in view
     dStatsDisplay_1 = Show(OutputPort(dStats, 1), spreadSheetView2)
-
-    # set active view
     SetActiveView(spreadSheetView1)
-
-    # set active source
     SetActiveSource(dStats)
-
-    # set active view back to layout 1
     SetActiveView(renderView1)
     ########################################################
 
     UpdatePipeline()
 
     dStatsDataInfo = dStats.GetDataInformation()
-    dStatsStatsInfo = dStatsDataInfo.GetRowDataInformation()
-    numStats = dStatsDataInfo.GetRowDataInformation().GetNumberOfArrays()
 
     Times = getTimeSteps()
 
@@ -238,7 +220,7 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
         if len(Times)==1:
             statTag = kpi
         else:
-            statTag = kpi + "_" + str(t)
+            statTag = kpi + "_{:f}".format(t)
         writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag)
 
     # Set view back to the last view
@@ -342,7 +324,7 @@ def correctTimeSteps(timeSteps,times):
     timeStepsCorrected = [x for x in timeSteps if 0 <= x < timesLen]
     subdiffMain = data_IO.difflists(timeSteps, timeStepsCorrected)
     if len(subdiffMain) > 0:
-        warnings.warn("Excluding time points {}", data_IO.list2string(subdiffMain))
+        warnings.warn("Excluding time point (s) " +str(data_IO.list2string(subdiffMain)))
         timeSteps = timeStepsCorrected
     return timeSteps
 
