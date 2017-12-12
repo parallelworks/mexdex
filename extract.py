@@ -95,7 +95,7 @@ for kpi in kpihash:
         d = pvutils.createBasic(metrichash, dataReader, readerDisplay)
 
     if extractStats:
-        pvutils.extractStats(d, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics)
+        pvutils.extractStats(d, kpi, metrichash, fp_csv_metrics)
 
     if kpiimage != "None" and kpiimage != "plot":
         if not (os.path.exists(outputDir)):

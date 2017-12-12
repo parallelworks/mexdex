@@ -7,36 +7,6 @@ import re
 
 from collections import OrderedDict
 
-def isInt(s):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
-
-
-def frange(a, b, inc):
-    if isInt(a) and isInt(b) and isInt(inc):
-        a = int(a)
-        b = int(b)
-        inc = int(inc)
-    else:
-        a = float(a)
-        b = float(b)
-        inc = float(inc)
-    x = [a]
-    for i in range(1, int(math.ceil(((b + inc) - a) / inc))):
-        x.append(a + i * inc)
-    return (str(e) for e in x)
-
-
-def expandVars(v, RangeDelimiter = ':'):
-    min = v.split(RangeDelimiter)[0]
-    max = v.split(RangeDelimiter)[1]
-    step = v.split(RangeDelimiter)[2]
-    v = ','.join(frange(min, max, step))
-    return v
-
 def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter = "\n", withParamType = True):
     with open(paramsFile) as f:
         content = f.read().split(paramsdelimiter)
@@ -56,7 +26,7 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
             if valsdelimiter in pval:
                 pval = pval.split(valsdelimiter)
             elif ":" in pval:
-                pval = expandVars(pval).split(",")
+                pval = data_IO.expandVars(pval).split(",")
             else:
                 pval = [pval]
             pvals[pname] = pval

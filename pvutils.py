@@ -118,12 +118,38 @@ def extractStatsOld(d, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics, ave=[]):
     fp_csv_metrics.write(",".join([kpi, str(average), str(datarange[0]),str(datarange[1])]) + "\n")
 
 
-def extractStats(dataSource, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics):
+def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics,statsTag):
+    for iStat in range(numStats):
+        statName = dStatsStatsInfo.GetArrayInformation(iStat).GetName()
+        statValue = dStatsStatsInfo.GetArrayInformation(iStat).GetComponentRange(0)[0]
+        if statName == 'Maximum':
+            maxaximum = statValue
+        elif statName == 'Minimum':
+            minimum = statValue
+        elif statName == 'Mean':
+            average = statValue
+        elif statName == 'Standard Deviation':
+            stanDev = statValue
+
+    fp_csv_metrics.write(
+        ",".join([statsTag, str(average), str(minimum), str(maxaximum), str(stanDev)]) + "\n")
+
+
+def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
+
+    # Get view before adding the spreadsheets to get back to it afterwards.
+    camera = GetActiveCamera()
+    renderView1 = GetActiveViewOrCreate('RenderView')
+
     # If kpifield is a vector, add a calculator on top and extract the component of the vector
     # as a scalar. Also, add a calculator for scalar data since this resolves a ParaView
     # bug/problem with extracting data directly from exo files
 
+    kpifield = metrichash['field']
+    kpiComp = metrichash['fieldComponent']
+
     arrayInfo = dataSource.PointData[kpifield]
+
     # create a new 'Calculator'
     if isfldScalar(arrayInfo):
         statVarName = kpifield
@@ -142,25 +168,89 @@ def extractStats(dataSource, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics):
     dStats = DescriptiveStatistics(Input=dataSource, ModelInput=None)
     
     dStats.VariablesofInterest = [statVarName]
+
+    ########################################################
+    # Add another layout for viewing the spreadsheets. This is for updating the results
+    # when switching to different time points at the end.
+
+    CreateLayout('Layout #2')
+
+    # set active view
+    SetActiveView(None)
+
+    # Create a new 'SpreadSheet View'
+    spreadSheetView1 = CreateView('SpreadSheetView')
+    spreadSheetView1.ColumnToSort = ''
+    spreadSheetView1.BlockSize = 1024L
+
+    # get layout
+    layout2 = GetLayout()
+    layout2.AssignView(0, spreadSheetView1)
+    dStatsDisplay = Show(dStats, spreadSheetView1)
+
+    # Create a new 'SpreadSheet View'
+    spreadSheetView2 = CreateView('SpreadSheetView')
+    spreadSheetView2.ColumnToSort = ''
+    spreadSheetView2.BlockSize = 1024L
+    layout2.AssignView(2, spreadSheetView2)
+
+    # show data in view
+    dStatsDisplay_1 = Show(OutputPort(dStats, 1), spreadSheetView2)
+
+    # set active view
+    SetActiveView(spreadSheetView1)
+
+    # set active source
+    SetActiveSource(dStats)
+
+    # set active view back to layout 1
+    SetActiveView(renderView1)
+    ########################################################
+
     UpdatePipeline()
 
     dStatsDataInfo = dStats.GetDataInformation()
     dStatsStatsInfo = dStatsDataInfo.GetRowDataInformation()
     numStats = dStatsDataInfo.GetRowDataInformation().GetNumberOfArrays()
 
-    for iStat in range(numStats):
-        statName = dStatsStatsInfo.GetArrayInformation(iStat).GetName()
-        statValue = dStatsStatsInfo.GetArrayInformation(iStat).GetComponentRange(0)[0]
-        if  statName == 'Maximum':
-            maxaximum = statValue
-        elif statName == 'Minimum' :
-            minimum = statValue
-        elif statName == 'Mean':
-            average = statValue
-        elif statName == 'Standard Deviation':
-            stanDev = statValue
+    Times = getTimeSteps()
 
-    fp_csv_metrics.write(",".join([kpi, str(average), str(minimum), str(maxaximum), str(stanDev)]) + "\n")
+    if ("extractStatsTimeSteps" in metrichash):
+        Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimeSteps"])
+    else:
+        try:
+            Times = data_IO.str2numList(metrichash["extractStatsTimes"])
+        except ValueError:
+            Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimes"])
+
+    anim = GetAnimationScene()
+    anim.PlayMode = 'Snap To TimeSteps'
+
+    for t in Times:
+        anim.AnimationTime = t
+        RenderAllViews()
+        dStats.VariablesofInterest = [statVarName]
+        UpdatePipeline()
+        dStatsDataInfo = dStats.GetDataInformation()
+        dStatsStatsInfo = dStatsDataInfo.GetRowDataInformation()
+        numStats = dStatsDataInfo.GetRowDataInformation().GetNumberOfArrays()
+
+        if len(Times)==1:
+            statTag = kpi
+        else:
+            statTag = kpi + "_" + str(t)
+        writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag)
+
+    # Set view back to the last view
+    renderView1 = setFrame2latestTime(renderView1)
+
+    # Delete the second layout after writing all the statistics
+    Delete(spreadSheetView1)
+    del spreadSheetView1
+    Delete(spreadSheetView2)
+    del spreadSheetView2
+    # get layout
+    RemoveLayout(layout2)
 
 
 def correctfieldcomponent(datasource, metrichash):
@@ -247,12 +337,42 @@ def getTimeSteps():
     return timeSteps
 
 
-def setFrame2latestTime(renderView1):
+def correctTimeSteps(timeSteps,times):
+    timesLen = len(times)
+    timeStepsCorrected = [x for x in timeSteps if 0 <= x < timesLen]
+    subdiffMain = data_IO.difflists(timeSteps, timeStepsCorrected)
+    if len(subdiffMain) > 0:
+        warnings.warn("Excluding time points {}", data_IO.list2string(subdiffMain))
+        timeSteps = timeStepsCorrected
+    return timeSteps
+
+
+def getTimeStepsSubSet(times, timeStepsStr):
+    if (timeStepsStr == 'last') or (timeStepsStr == "latest") or (timeStepsStr == "-1"):
+        timesSubSet = [times[-1]]
+    elif timeStepsStr == 'first' or (timeStepsStr == "0"):
+        timesSubSet = [times[0]]
+    elif timeStepsStr == "all":
+        timesSubSet = times
+    elif ":" in timeStepsStr:
+        timeSlice = data_IO.str2slice(timeStepsStr)
+        timesSubSet = times[timeSlice]
+    elif "," in timeStepsStr:
+        timeStepsSubSet = data_IO.read_ints_from_string(timeStepsStr, ",")
+        timeStepsSubSet = correctTimeSteps(timeStepsSubSet, times)
+        timesSubSet = [times[index] for index in timeStepsSubSet]
+    else:
+        timesSubSet = [int(timeStepsStr)]
+    return timesSubSet
+
+
+def setFrame2latestTime(renderView1, verbose=False):
 
     TimeSteps = getTimeSteps()
 
     latesttime = TimeSteps[-1]
-    print("Setting view to latest Time: " + str(latesttime))
+    if verbose:
+        print("Setting view to latest Time: " + str(latesttime))
 
     renderView1.ViewTime = latesttime
     return renderView1
@@ -263,7 +383,7 @@ def initRenderView (dataReader, viewSize, backgroundColor):
     renderView1 = GetActiveViewOrCreate('RenderView')
 
     try:
-        renderView1 = setFrame2latestTime(renderView1)
+        renderView1 = setFrame2latestTime(renderView1, verbose=True)
     except:
         pass
 
@@ -437,6 +557,11 @@ def createStreamTracer(metrichash, data_reader, data_display):
     tubeDisplay.Specular = 0
     tubeDisplay.Opacity = opacity
 
+
+    fieldOrig = metrichash['field']
+    if 'fieldComponent' in metrichash:
+        fieldComponentOrig = metrichash['fieldComponent']
+
     metrichash['field'] = metrichash['colorByField']
     if 'colorByFieldComponent' in metrichash:
         metrichash['fieldComponent'] = metrichash['colorByFieldComponent']
@@ -447,6 +572,12 @@ def createStreamTracer(metrichash, data_reader, data_display):
             Hide(data_reader, renderView1)
     except:
         pass
+
+    # Set 'field' and 'fieldComponent' to their original values
+    metrichash['field'] = fieldOrig
+    if 'colorByFieldComponent' in metrichash:
+        metrichash['fieldComponent'] = fieldComponentOrig
+
     return tube
 
 

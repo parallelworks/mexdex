@@ -2,6 +2,7 @@ import sys
 import re
 import os
 import tarfile
+import math
 
 
 def xstr(s):
@@ -10,6 +11,13 @@ def xstr(s):
 
 def upperfirst(x):
     return x[0].upper() + x[1:]
+
+
+def str2num(s):
+    try:
+        return int(s)
+    except ValueError:
+        return float(s)
 
 
 def removeLeadSpacesFromStrList(strList):
@@ -22,6 +30,11 @@ def removeTrailingCharFromStrList(strList, char2strip):
     for iLine, line in enumerate(strList):
         strList[iLine] = strList[iLine].rstrip().rstrip(char2strip) + '\n'
     return strList
+
+
+def difflists(first, second):
+    second = set(second)
+    return [item for item in first if item not in second]
 
 
 def textStartsWithExactMath(text, flag_str, delimiter):
@@ -40,6 +53,53 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 
+def str2slice(text):
+    return slice(
+        *map(lambda x: int(x.strip()) if x.strip() else None, text.split(':')))
+
+
+def isInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
+def frange(a, b, inc):
+    if isInt(a) and isInt(b) and isInt(inc):
+        a = int(a)
+        b = int(b)
+        inc = int(inc)
+    else:
+        a = float(a)
+        b = float(b)
+        inc = float(inc)
+    x = [a]
+    for i in range(1, int(math.ceil(((b + inc) - a) / inc))):
+        x.append(a + i * inc)
+    return (str(e) for e in x)
+
+
+def expandVars(v, RangeDelimiter = ':'):
+    min = v.split(RangeDelimiter)[0]
+    max = v.split(RangeDelimiter)[1]
+    step = v.split(RangeDelimiter)[2]
+    v = ','.join(frange(min, max, step))
+    return v
+
+
+def str2numList(pval, valsdelimiter=','):
+    if valsdelimiter in pval:
+        pval = pval.split(valsdelimiter)
+    elif ":" in pval:
+        pval = expandVars(pval).split(",")
+    else:
+        pval = [pval]
+    numList = [str2num(x) for x in pval]
+    return numList
+
+
 def read_ints_from_file_pointer(file_pointer, flag_str, num_data,
                                 delimiter=None, startIndex=0):
     data = []
@@ -54,6 +114,10 @@ def read_ints_from_file_pointer(file_pointer, flag_str, num_data,
         print("Error: cannot read ", flag_str, " from input file")
         sys.exit(1)
     return data
+
+
+def list2string(inputList):
+    return '[%s]' % ', '.join(map(str, inputList))
 
 
 def read_floats_from_file_pointer(file_pointer, flag_str, num_data,
@@ -139,6 +203,12 @@ def read_floats_from_string(str2read, delimiter=None):
     strList = str2read.split(delimiter)
     floatList = [float(i) for i in strList]
     return floatList
+
+
+def read_ints_from_string(str2read, delimiter=None):
+    strList = str2read.split(delimiter)
+    intList = [int(i) for i in strList]
+    return intList
 
 
 def open_file(file_name, open_mode="r"):

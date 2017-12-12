@@ -103,6 +103,14 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         else:
             metrichash['extractStats'] = 'True'
 
+    if ("extractStatsTimeSteps" in metrichash) and ("extractStatsTimes" in metrichash):
+        warnings.warn("Only set one of \"extractStatsTimeSteps\" or "
+                      "\"extractStatsTimes\" fields for " + kpi +
+                      ". Using \"extractStatsTimeSteps\".")
+    elif (not ("extractStatsTimeSteps" in metrichash)) and \
+            (not ("extractStatsTimes" in metrichash)):
+            metrichash['extractStatsTimeSteps'] = 'last'
+
     if not data_IO.str2bool(metrichash['extractStats']):
         metrichash['DEXoutputFlag'] = 'none'
 
