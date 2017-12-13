@@ -308,7 +308,9 @@ def getTimeSteps():
     animationScene1.UpdateAnimationUsingDataTimeSteps()
 
     timeSteps = []
-    if type(animationScene1.TimeKeeper.TimestepValues)== int or type(animationScene1.TimeKeeper.TimestepValues)== float:
+    if len(animationScene1.TimeKeeper.TimestepValues) == 0:
+        timeSteps = [0]
+    elif type(animationScene1.TimeKeeper.TimestepValues)== int or type(animationScene1.TimeKeeper.TimestepValues)== float:
         timeSteps.append(animationScene1.TimeKeeper.TimestepValues)       
     else:
         timeSteps = list(animationScene1.TimeKeeper.TimestepValues)
@@ -678,6 +680,7 @@ def createBasic(metrichash, dataReader, dataDisplay):
     renderView1 = GetActiveViewOrCreate('RenderView')
     bodyopacity=float(metrichash['bodyopacity'])
     dataDisplay.Opacity = bodyopacity
+    dataDisplay.SetRepresentationType(metrichash['representationType'])
 
     if not (metrichash['field'] == 'None'):
         colorMetric(dataReader, metrichash)
