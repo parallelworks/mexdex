@@ -118,21 +118,32 @@ def extractStatsOld(d, kpi, kpifield, kpiComp, kpitype, fp_csv_metrics, ave=[]):
     fp_csv_metrics.write(",".join([kpi, str(average), str(datarange[0]),str(datarange[1])]) + "\n")
 
 
-def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics,statsTag, time):
+def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statsTag, simTime,
+                          isNegField=False):
+    anim = GetAnimationScene()
     for iStat in range(numStats):
         statName = dStatsStatsInfo.GetArrayInformation(iStat).GetName()
         statValue = dStatsStatsInfo.GetArrayInformation(iStat).GetComponentRange(0)[0]
         if statName == 'Maximum':
-            maxaximum = statValue
+            if isNegField:
+                minimum = -statValue
+            else:
+                maximum = statValue
+
         elif statName == 'Minimum':
-            minimum = statValue
+            if isNegField:
+                maximum = -statValue
+            else:
+                minimum = statValue
         elif statName == 'Mean':
             average = statValue
+            if isNegField:
+                average = -average
         elif statName == 'Standard Deviation':
             stanDev = statValue
     fp_csv_metrics.write(
-        ",".join([statsTag, str(average), str(minimum), str(maxaximum), str(stanDev),
-                  "{:f}".format(time)]) + "\n")
+        ",".join([statsTag, str(average), str(minimum), str(maximum), str(stanDev),
+                  "{:f}".format(simTime)]) + "\n")
 
 
 def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
@@ -156,18 +167,32 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
     else:
         statVarName = kpifield + '_' + kpiComp
     calc1 = Calculator(Input=dataSource)
-    calc1.ResultArrayName = statVarName
-    if kpiComp == 'Magnitude':
-        calc1.Function = 'mag('+kpifield+')'
+
+    resultVarName = statVarName+'_s'
+    calc1.ResultArrayName = resultVarName
+
+    # ############################################################################
+    # Values are multiplied by "-1" and then stats are corrected in
+    # writeCurrentStepStats to get around an error with extracting values from some
+    # exo files
+    # ############################################################################
+    isNegField = True
+    if isNegField:
+        multiplier = '-1*'
     else:
-        calc1.Function = calc1.ResultArrayName
+        multiplier = ''
+
+    if kpiComp == 'Magnitude':
+        calc1.Function = multiplier+'mag('+kpifield+')'
+    else:
+        calc1.Function = multiplier+statVarName
     UpdatePipeline()
     dataSource = calc1
 
     # create a new 'Descriptive Statistics'
     dStats = DescriptiveStatistics(Input=dataSource, ModelInput=None)
     
-    dStats.VariablesofInterest = [statVarName]
+    dStats.VariablesofInterest = [resultVarName]
 
     ########################################################
     # Add another layout for viewing the spreadsheets. This is for updating the results
@@ -188,15 +213,11 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
     dStatsDisplay_1 = Show(OutputPort(dStats, 1), spreadSheetView2)
     SetActiveView(spreadSheetView1)
     SetActiveSource(dStats)
-    SetActiveView(renderView1)
     ########################################################
 
     UpdatePipeline()
 
-    dStatsDataInfo = dStats.GetDataInformation()
-
     Times = getTimeSteps()
-
     if ("extractStatsTimeSteps" in metrichash):
         Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimeSteps"])
     else:
@@ -206,29 +227,35 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
             Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimes"])
 
     anim = GetAnimationScene()
-    anim.PlayMode = 'Snap To TimeSteps'
+
+    anim.PlayMode = 'Real Time'
 
     for t in Times:
+        spreadSheetView1.ViewTime = t
+        spreadSheetView2.ViewTime = t
         anim.AnimationTime = t
+        Render()
         RenderAllViews()
-        dStats.VariablesofInterest = [statVarName]
         UpdatePipeline()
+
         dStatsDataInfo = dStats.GetDataInformation()
         dStatsStatsInfo = dStatsDataInfo.GetRowDataInformation()
         numStats = dStatsDataInfo.GetRowDataInformation().GetNumberOfArrays()
         statTag = kpi
-        writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag, t)
+        writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag, t,
+                              isNegField)
+
 
     ########################################################
     # Set view back to the last view
-
+    SetActiveView(renderView1)
     renderView1 = setFrame2latestTime(renderView1)
+
     # Delete the second layout after writing all the statistics
     Delete(spreadSheetView1)
     del spreadSheetView1
     Delete(spreadSheetView2)
     del spreadSheetView2
-    # get layout
     RemoveLayout(layout2)
 
 
@@ -343,7 +370,7 @@ def getTimeStepsSubSet(times, timeStepsStr):
         timeStepsSubSet = correctTimeSteps(timeStepsSubSet, times)
         timesSubSet = [times[index] for index in timeStepsSubSet]
     else:
-        timesSubSet = [int(timeStepsStr)]
+        timesSubSet = [times[int(timeStepsStr)]]
     return timesSubSet
 
 
