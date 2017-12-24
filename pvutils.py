@@ -386,6 +386,13 @@ def setFrame2latestTime(renderView1, verbose=False):
     return renderView1
 
 
+def setImageProps():
+    magnification = 2
+    viewSize =  [700, 600]
+    backgroundColor = [1, 1, 1]  # set background color to white
+    return magnification, viewSize, backgroundColor
+
+
 def initRenderView (dataReader, viewSize, backgroundColor):
     # get active view
     renderView1 = GetActiveViewOrCreate('RenderView')
@@ -404,6 +411,9 @@ def initRenderView (dataReader, viewSize, backgroundColor):
 
     # reset view to fit data
     renderView1.ResetCamera()
+
+    renderView1.InteractionMode = '2D'
+    renderView1.OrientationAxesVisibility = 0
 
     return renderView1, readerDisplay
 

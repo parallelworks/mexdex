@@ -89,7 +89,7 @@ caselist = paramUtils.writeInputParamVals2caselist(cases, inputVarNames)
 for kpi in kpihash:
     kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi], kpi)
 
-# Read the desired output metrics
+# Read the list of desired output metrics
 outParamTable = paramUtils.getOutputParamsFromKPI(kpihash, orderPreservedKeys, ignoreSet)
 
 # Read the desired metric from each output file and add them to caselist

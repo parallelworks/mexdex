@@ -272,7 +272,7 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
         fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
 
     for param in paramTable:
-        if param[1] >= 0:
+        if param[1] >= 0: # Read the parameters from a Mex (Paraview) .csv file
             param_icase = data_IO.read_float_from_file_pointer(
                 fPVcsv, param[0], ',', param[1])
         else:  # Read parameters from other files if provided

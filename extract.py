@@ -23,9 +23,7 @@ caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
 convert2cellData = data_IO.str2bool(data_IO.setOptionalSysArgs(sys.argv, "False", 6))
 
 # Image settings:
-magnification = 2
-viewSize = [700, 600]
-backgroundColor = [1, 1, 1]   # set background color to white
+magnification, viewSize, backgroundColor = pvutils.setImageProps()
 
 # Read the desired outputs/metrics from the csv file:
 kpihash = metricsJsonUtils.readKPIJsonFile(kpiFileAddress)[0]
@@ -36,8 +34,8 @@ print(kpihash)
 paraview.simple._DisableFirstRenderCameraReset()
 
 # Read data file
-data2Read = pvutils.getfieldsfromkpihash(kpihash)
-dataReader = pvutils.readDataFile(dataFileAddress, data2Read, convert2cellData)
+fields2Read = pvutils.getfieldsfromkpihash(kpihash)
+dataReader = pvutils.readDataFile(dataFileAddress, fields2Read, convert2cellData)
 
 # Initialize renderView and display
 renderView1, readerDisplay = pvutils.initRenderView(dataReader, viewSize,
@@ -54,8 +52,6 @@ for kpi in kpihash:
 fp_csv_metrics = data_IO.open_file(metricFile, "w")
 fp_csv_metrics.write(",".join(['metric','ave','min','max','sd','time'])+"\n")
 
-renderView1.InteractionMode = '2D'
-renderView1.OrientationAxesVisibility = 0
 
 for kpi in kpihash:
     if not data_IO.str2bool(kpihash[kpi]['IsParaviewMetric']):
