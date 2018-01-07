@@ -725,6 +725,47 @@ def createBasic(metrichash, dataReader, dataDisplay):
         ColorBy(dataDisplay, ('POINTS', ''))
     return dataReader
 
+
+def genQuery(queryField, queryList):
+    query = ''
+    elemList = data_IO.read_ints_from_string(queryList, ',')
+    for elem in elemList:
+        query = query + '({:s} == {:d}) | '.format(queryField, elem)
+    # Remove the last "\" from query
+    query = query[:-2]
+    return query
+
+
+def createFindData(metrichash, dataReader, dataDisplay):
+    camera = GetActiveCamera()
+    renderView1 = GetActiveViewOrCreate('RenderView')
+
+    opacity = float(metrichash['opacity'])
+    bodyopacity = float(metrichash['bodyopacity'])
+    dataDisplay.Opacity = bodyopacity
+    dataDisplay.ColorArrayName = ['POINTS', '']
+
+    # create the extractSelection object
+    extract = ExtractSelection(Input = dataReader)
+    query = genQuery(metrichash['queryField'],metrichash['queryList'])
+    ########
+    ######## Don't get this from user, write a function to determine field type
+    #########
+    queryFieldType = metrichash['queryFieldType']
+    sqs = SelectionQuerySource(FieldType=queryFieldType, QueryString= query)
+    extract.Selection = sqs
+    eDisplay = Show(extract, renderView1)
+
+    eDisplay.ColorArrayName = [None, '']
+    eDisplay.SetRepresentationType(metrichash['representationType'])
+    eDisplay.DiffuseColor = [0.0, 1.0, 0.0]
+    eDisplay.Specular = 0
+    eDisplay.Opacity = opacity
+    colorMetric(extract, metrichash)
+
+    return  extract
+
+
 def plotLine(infile, imageName) :
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt

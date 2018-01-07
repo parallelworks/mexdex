@@ -89,6 +89,8 @@ for kpi in kpihash:
         d = pvutils.createVolume(metrichash, dataReader, readerDisplay)
     elif kpitype == "Basic":
         d = pvutils.createBasic(metrichash, dataReader, readerDisplay)
+    elif kpitype == "FindData":
+        d = pvutils.createFindData(metrichash, dataReader, readerDisplay)
 
     if extractStats:
         pvutils.extractStats(d, kpi, metrichash, fp_csv_metrics)
