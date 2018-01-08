@@ -184,6 +184,43 @@ def read_int_from_strList(strList, flag_str, delimiter=None, startIndexInLine=0,
     return data
 
 
+def get_line_number_in_file(file_pointer, flag_str, match_first=True):
+    line_num = None
+    file_pointer.seek(0)
+    for i, line in enumerate(file_pointer,1):
+        if flag_str in line:
+            line_num = i
+            if match_first:
+                return line_num
+    return line_num
+
+
+def get_index_in_str_list(str_list, flag_str, match_first=True, start_from=0):
+    line_num = None
+    for i, line in enumerate(str_list[start_from:], start_from):
+        if flag_str in line:
+            line_num = i
+            if match_first:
+                return line_num
+    return line_num
+
+
+def read_int_from_file_line_offset(file_pointer, flag_str, offset=0):
+    file_pointer.seek(0)
+    lines = file_pointer.readlines()
+    int_line = get_index_in_str_list(lines, flag_str) + offset + 1
+    data = int(lines[int_line])
+    return data
+
+
+def read_floats_from_file_line_offset(file_pointer, flag_str, delimiter=None, offset=0):
+    file_pointer.seek(0)
+    lines = file_pointer.readlines()
+    data_line_num = get_index_in_str_list(lines, flag_str) + offset
+    data = read_floats_from_string(lines[data_line_num + 1], delimiter)
+    return data
+
+
 def read_str_from_strList(strList, flag_str, delimiter=None,
                           startIndex=0, index2start=0):
     data = []
