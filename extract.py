@@ -58,12 +58,7 @@ for kpi in kpihash:
         continue
     metrichash = kpihash[kpi]
     kpitype = metrichash['type']
-    kpifield = metrichash['field']
-    kpiComp = metrichash['fieldComponent']
     kpiimage = metrichash['image']
-    extractStats = data_IO.str2bool(metrichash['extractStats'])
-    makeAnim = data_IO.str2bool(metrichash['animation'])
-    export2Blender = data_IO.str2bool(metrichash['blender'])
 
     HideAll()
     Show(dataReader, renderView1)
@@ -92,6 +87,7 @@ for kpi in kpihash:
     elif kpitype == "FindData":
         d = pvutils.createFindData(metrichash, dataReader, readerDisplay)
 
+    extractStats = data_IO.str2bool(metrichash['extractStats'])
     if extractStats:
         pvutils.extractStats(d, kpi, metrichash, fp_csv_metrics)
 
@@ -104,6 +100,7 @@ for kpi in kpihash:
         SaveScreenshot(outputDir + metrichash['imageName'],
                        magnification=magnification, quality=100)
 
+    makeAnim = data_IO.str2bool(metrichash['animation'])
     if makeAnim:
         animationName = metrichash['animationName']
         if caseNumber:
@@ -111,6 +108,7 @@ for kpi in kpihash:
 
         pvutils.makeAnimation(outputDir, kpi, magnification, animationName)
 
+    export2Blender = data_IO.str2bool(metrichash['blender'])
     if export2Blender:
         blenderContext=metrichash['blendercontext']
         renderBody=metrichash['blenderbody']
