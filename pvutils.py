@@ -337,6 +337,15 @@ def colorMetric(d, metrichash):
     if 'LabelFormat' in metrichash:
         ctfColorBar.LabelFormat = metrichash["LabelFormat"]
         ctfColorBar.RangeLabelFormat = metrichash["LabelFormat"]
+    if 'NumberOfLabels' in metrichash:
+        ctfColorBar.NumberOfLabels = int(metrichash["NumberOfLabels"])
+    if 'DrawTickMarks' in metrichash:
+        ctfColorBar.DrawTickMarks = int(data_IO.str2bool(metrichash["DrawTickMarks"]))
+    if 'DrawSubTickMarks' in metrichash:
+        ctfColorBar.DrawSubTickMarks = int(data_IO.str2bool(metrichash["DrawSubTickMarks"]))
+    if 'ColorBarAnnotations' in metrichash:
+        ctf.Annotations = data_IO.string2list(metrichash["ColorBarAnnotations"])
+        ctfColorBar.DrawAnnotations = 1
 
     imgtype=metrichash['image'].split("_")[0]
     PVversion = getParaviewVersion()
