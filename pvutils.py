@@ -440,9 +440,9 @@ def get_colorbar_custom_labels(metricash, ctl):
     provided by the user
     """
 
-    # Set labels to custom labels if provided by the user:
+   # Set labels to custom labels if provided by the user:
     if 'customLabel' in metricash:
-        labels = data_IO.read_floats_from_string(metricash['customLabel'])
+        labels = data_IO.read_floats_from_string(metricash['customLabel'],',')
 
     # if not, set the labels based on number of labels provided by the user
     else:
