@@ -52,7 +52,7 @@ for kpi in kpihash:
 fp_csv_metrics = data_IO.open_file(metricFile, "w")
 fp_csv_metrics.write(",".join(['metric','ave','min','max','sd','time'])+"\n")
 
-
+#pw_filters = []
 for kpi in kpihash:
     if not data_IO.str2bool(kpihash[kpi]['IsParaviewMetric']):
         continue
@@ -69,27 +69,27 @@ for kpi in kpihash:
     
     ave = []
     if kpitype == "Slice":
-        d = pvutils.createSlice(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createSlice(metrichash, dataReader, readerDisplay)
     elif kpitype == "WarpByVector":
-        d = pvutils.createWarpbyVector(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createWarpbyVector(metrichash, dataReader, readerDisplay)
     elif kpitype == "Clip":
-        d = pvutils.createClip(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createClip(metrichash, dataReader, readerDisplay)
     elif kpitype == "Probe":
-        d = pvutils.createProbe(metrichash, dataReader)
+        pw_filter = pvutils.createProbe(metrichash, dataReader)
     elif kpitype == "Line":
-        d = pvutils.createLine(metrichash, dataReader, outputDir, caseNumber)
+        pw_filter = pvutils.createLine(metrichash, dataReader, outputDir, caseNumber)
     elif kpitype == "StreamLines":
-        d = pvutils.createStreamTracer(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createStreamTracer(metrichash, dataReader, readerDisplay)
     elif kpitype == "Volume":
-        d = pvutils.createVolume(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createVolume(metrichash, dataReader, readerDisplay)
     elif kpitype == "Basic":
-        d = pvutils.createBasic(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createBasic(metrichash, dataReader, readerDisplay)
     elif kpitype == "FindData":
-        d = pvutils.createFindData(metrichash, dataReader, readerDisplay)
+        pw_filter = pvutils.createFindData(metrichash, dataReader, readerDisplay)
 
     extractStats = data_IO.str2bool(metrichash['extractStats'])
     if extractStats:
-        pvutils.extractStats(d, kpi, metrichash, fp_csv_metrics)
+        pvutils.extractStats(pw_filter, kpi, metrichash, fp_csv_metrics)
 
     if kpiimage != "None" and kpiimage != "plot":
         if not (os.path.exists(outputDir)):
@@ -112,6 +112,6 @@ for kpi in kpihash:
     if export2Blender:
         blenderContext=metrichash['blendercontext']
         renderBody=metrichash['blenderbody']
-        pvutils.exportx3d(outputDir, kpi, d, dataReader, renderBody, blenderContext)
+        pvutils.exportx3d(outputDir, kpi, pw_filter, dataReader, renderBody, blenderContext)
 
 fp_csv_metrics.close()

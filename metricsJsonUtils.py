@@ -13,8 +13,23 @@ def readKPIJsonFile(kpiFile):
     fp_jsonIn.close()
     return kpihash, orderPreservedKeys
 
+# def check_key_value(key, value):
+#     """Raise exception if a key value doesn't belongs to a given set.
+#     """
+#     if value not in acceptable_vals:
+#         raise ValueError("")
+
 
 def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
+    if not ('IsParaviewMetric' in metrichash):
+        metrichash['IsParaviewMetric'] = 'True'
+
+    # Do not continue if a multi-filter paraview Metric:
+    if data_IO.str2bool(metrichash['IsParaviewMetric']):
+        if not ('MultiFilter' in metrichash):
+            metrichash['MultiFilter'] = 'False'
+        if data_IO.str2bool(metrichash['MultiFilter']):
+            return metrichash
 
     if not ('sense' in metrichash):
         metrichash['sense'] = None
@@ -24,8 +39,6 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         metrichash['field'] = 'None'
         metrichash['fieldComponent'] = 'None'
 
-    if not ('IsParaviewMetric' in metrichash):
-        metrichash['IsParaviewMetric'] = 'True'
 
     if not ('DEXoutputFlag' in metrichash):
         if data_IO.str2bool(metrichash['IsParaviewMetric']):

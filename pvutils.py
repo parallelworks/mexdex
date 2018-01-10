@@ -4,6 +4,7 @@ import data_IO
 import os
 import subprocess
 import shutil
+import numpy as np
 
 # For saving plots as pngs
 import matplotlib
@@ -418,6 +419,40 @@ def initRenderView (dataReader, viewSize, backgroundColor):
     return renderView1, readerDisplay
 
 
+def get_colorbar_range(ctl):
+    """ Return the range of a color transfer function (ctl) as a list = [min, max]
+
+    I am sure there is a better way of doing this, but for now I am getting the minimum
+    and maximum values from the ctl.RGBPoints.
+    """
+    rgbPoints = ctl.RGBPoints
+    min = rgbPoints[0]
+    max = rgbPoints[-4]
+    return [min, max]
+
+
+def get_colorbar_custom_labels(metricash, ctl):
+    """ Return a list of paraview colorbar labels
+
+    Set/Get colorbar labels either by
+    - Reading the customLables directly from the metrichash, or
+    - Set the labels based on the color transfer function (ctl) and number of labels
+    provided by the user
+    """
+
+    # Set labels to custom labels if provided by the user:
+    if 'customLabel' in metricash:
+        labels = data_IO.read_floats_from_string(metricash['customLabel'])
+
+    # if not, set the labels based on number of labels provided by the user
+    else:
+        color_range = get_colorbar_range(ctl)
+        num_labels = float(metricash['NumberOfLabels'])
+        labels = np.linspace(color_range[0],color_range[1],num_labels).tolist()
+
+    return labels
+
+
 def colorMetric(d, metrichash):
     display = GetDisplayProperties(d)
     kpifld = metrichash['field']
@@ -476,18 +511,30 @@ def colorMetric(d, metrichash):
     if 'LabelFormat' in metrichash:
         ctfColorBar.LabelFormat = metrichash["LabelFormat"]
         ctfColorBar.RangeLabelFormat = metrichash["LabelFormat"]
-    if 'NumberOfLabels' in metrichash:
-        ctfColorBar.NumberOfLabels = int(metrichash["NumberOfLabels"])
+
+    PVversion = getParaviewVersion()
+
+    if PVversion < 5.04:
+        if 'NumberOfLabels' in metrichash:
+            ctfColorBar.NumberOfLabels = int(metrichash["NumberOfLabels"])
+    else:   # Use custom labels instead for paraview versions 5.4 and above:
+        if ('NumberOfLabels' in metrichash) | ('customLabel' in metrichash):
+            labels = get_colorbar_custom_labels(metrichash, ctf)
+            ctfColorBar.UseCustomLabels = 1
+            ctfColorBar.CustomLabels = labels
+
+
     if 'DrawTickMarks' in metrichash:
         ctfColorBar.DrawTickMarks = int(data_IO.str2bool(metrichash["DrawTickMarks"]))
-    if 'DrawSubTickMarks' in metrichash:
-        ctfColorBar.DrawSubTickMarks = int(data_IO.str2bool(metrichash["DrawSubTickMarks"]))
+    if PVversion < 5.04:
+        if 'DrawSubTickMarks' in metrichash:
+            ctfColorBar.DrawSubTickMarks = int(data_IO.str2bool(metrichash["DrawSubTickMarks"]))
     if 'ColorBarAnnotations' in metrichash:
         ctf.Annotations = data_IO.string2list(metrichash["ColorBarAnnotations"])
         ctfColorBar.DrawAnnotations = 1
 
     imgtype=metrichash['image'].split("_")[0]
-    PVversion = getParaviewVersion()
+
     if (imgtype!="iso"):
         # center
         if PVversion < 5.04:
