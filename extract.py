@@ -87,6 +87,9 @@ for kpi in kpihash:
     elif kpitype == "FindData":
         pw_filter = pvutils.createFindData(metrichash, dataReader, readerDisplay)
 
+    if data_IO.str2bool(metrichash['temporalStats']):
+        pw_filter = pvutils.statsOverTime(metrichash, pw_filter, readerDisplay)
+
     extractStats = data_IO.str2bool(metrichash['extractStats'])
     if extractStats:
         pvutils.extractStats(pw_filter, kpi, metrichash, fp_csv_metrics)

@@ -147,6 +147,44 @@ def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statsTag, s
                   "{:f}".format(simTime)]) + "\n")
 
 
+
+def statsOverTime(metrichash, dataSource, dataDisplay):
+    camera = GetActiveCamera()
+    renderView1 = GetActiveViewOrCreate('RenderView')
+
+    opacity=float(metrichash['opacity'])
+    bodyopacity=float(metrichash['bodyopacity'])
+    dataDisplay.Opacity = bodyopacity
+    dataDisplay.ColorArrayName = ['POINTS', '']
+
+    # create a new 'Temporal Statistics'
+    temp_stat = TemporalStatistics(Input=dataSource)
+
+    temp_stat_disp = Show(temp_stat, renderView1)
+    Hide(dataSource, renderView1)
+
+    temp_stat_disp.ColorArrayName = [None, '']
+    temp_stat_disp.SetRepresentationType(metrichash['representationType'])
+    temp_stat_disp.DiffuseColor = [0.0, 1.0, 0.0]
+    temp_stat_disp.Specular = 0
+    temp_stat_disp.Opacity = opacity
+
+    fieldOrig = metrichash['field']
+    metrichash['field'] = metrichash['field'] + '_' + metrichash['colorByField']
+
+    metrichash = correctfieldcomponent(temp_stat, metrichash)
+    colorMetric(temp_stat, metrichash)
+    try:
+        if metrichash['image'].split("_")[1] == "solo":
+            Hide(data_reader, renderView1)
+    except:
+        pass
+
+    # # Set 'field' to its original value
+    # metrichash['field'] = fieldOrig
+    return temp_stat
+
+
 def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
 
     # Get view before adding the spreadsheets to get back to it afterwards.
@@ -262,8 +300,8 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
 
 def correctfieldcomponent(datasource, metrichash):
     """
-    Set "fieldComponent" to "Magnitude" if the component of vector/tensor fields is not given. For scalar fields set 
-    "fieldComponent" to an empty string.
+    Set "fieldComponent" to "Magnitude" if the component of vector/tensor fields is
+    not given. For scalar fields set "fieldComponent" to an empty string.
     """
     kpifld = metrichash['field']
     arrayInfo = datasource.PointData[kpifld]

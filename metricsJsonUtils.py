@@ -116,6 +116,9 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         else:
             metrichash['extractStats'] = 'True'
 
+    if not('temporalStats' in metrichash):
+        metrichash['temporalStats'] = 'False'
+
     if ("extractStatsTimeSteps" in metrichash) and ("extractStatsTimes" in metrichash):
         warnings.warn("Only set one of \"extractStatsTimeSteps\" or "
                       "\"extractStatsTimes\" fields for " + kpi +
