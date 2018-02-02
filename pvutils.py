@@ -256,14 +256,7 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
 
     UpdatePipeline()
 
-    Times = getTimeSteps()
-    if ("extractStatsTimeSteps" in metrichash):
-        Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimeSteps"])
-    else:
-        try:
-            Times = data_IO.str2numList(metrichash["extractStatsTimes"])
-        except ValueError:
-            Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimes"])
+    Times = get_times(metrichash)
 
     anim = GetAnimationScene()
 
@@ -411,6 +404,18 @@ def getTimeStepsSubSet(times, timeStepsStr):
     else:
         timesSubSet = [times[int(timeStepsStr)]]
     return timesSubSet
+
+
+def get_times(metrichash):
+    Times = getTimeSteps()
+    if ("extractStatsTimeSteps" in metrichash):
+        Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimeSteps"])
+    else:
+        try:
+            Times = data_IO.str2numList(metrichash["extractStatsTimes"])
+        except ValueError:
+            Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimes"])
+    return Times
 
 
 def setFrame2latestTime(renderView1, verbose=False):
@@ -1015,8 +1020,8 @@ def adjustCamera(view, renderView1, metrichash):
 
 
 def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True):
-    animationFramesDir = outputDir + 'animFrames'
-    animationFramesDir = os.path.join(animationFramesDir, '')
+
+    animationFramesDir = os.path.join(outputDir, 'animFrames','')
     if not (os.path.exists(animationFramesDir)):
         os.makedirs(animationFramesDir)
 
