@@ -426,7 +426,9 @@ def setFrame2latestTime(renderView1, verbose=False):
 
 
 class ImageSettings:
+    """ ImageSettings holds image settings and properties"""
     def __init__(self, magnification=2, view_size=[700,600], background_color = [1,1,1]):
+        """ Set image magnification, view_size and background_color"""
         self.magnification = magnification
         self.view_size = view_size
         self.background_color = background_color
@@ -724,6 +726,7 @@ def createWarpbyVector(metrichash, data_reader, data_display):
         metrichash['field'] = metrichash['colorByField']
         if 'colorByFieldComponent' in metrichash:
             metrichash['fieldComponent'] = metrichash['colorByFieldComponent']
+        metrichash = correctfieldcomponent(data_reader, metrichash)
     colorMetric(s, metrichash)
 
 
