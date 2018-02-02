@@ -22,8 +22,7 @@ metricFile = sys.argv[4]
 caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
 convert2cellData = data_IO.str2bool(data_IO.setOptionalSysArgs(sys.argv, "False", 6))
 
-# Image settings:
-magnification, viewSize, backgroundColor = pvutils.setImageProps()
+image_settings = pvutils.ImageSettings()
 
 # Read the desired outputs/metrics from the csv file:
 kpihash = metricsJsonUtils.readKPIJsonFile(kpiFileAddress)[0]
@@ -38,8 +37,7 @@ fields2Read = pvutils.getfieldsfromkpihash(kpihash)
 dataReader = pvutils.readDataFile(dataFileAddress, fields2Read, convert2cellData)
 
 # Initialize renderView and display
-renderView1, readerDisplay = pvutils.initRenderView(dataReader, viewSize,
-                                                    backgroundColor)
+renderView1, readerDisplay = pvutils.initRenderView(dataReader, image_settings)
 
 print("Generating KPIs")
 
@@ -101,7 +99,7 @@ for kpi in kpihash:
         if caseNumber:
             metrichash['imageName'] = metrichash['imageName'].format(int(caseNumber))
         SaveScreenshot(outputDir + metrichash['imageName'],
-                       magnification=magnification, quality=100)
+                       magnification=image_settings.magnification, quality=100)
 
     makeAnim = data_IO.str2bool(metrichash['animation'])
     if makeAnim:
@@ -109,7 +107,7 @@ for kpi in kpihash:
         if caseNumber:
             animationName = animationName.format(int(caseNumber))
 
-        pvutils.makeAnimation(outputDir, kpi, magnification, animationName)
+        pvutils.makeAnimation(outputDir, kpi, image_settings.magnification, animationName)
 
     export2Blender = data_IO.str2bool(metrichash['blender'])
     if export2Blender:

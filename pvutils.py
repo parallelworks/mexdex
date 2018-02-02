@@ -425,14 +425,14 @@ def setFrame2latestTime(renderView1, verbose=False):
     return renderView1
 
 
-def setImageProps():
-    magnification = 2
-    viewSize =  [700, 600]
-    backgroundColor = [1, 1, 1]  # set background color to white
-    return magnification, viewSize, backgroundColor
+class ImageSettings:
+    def __init__(self, magnification=2, view_size=[700,600], background_color = [1,1,1]):
+        self.magnification = magnification
+        self.view_size = view_size
+        self.background_color = background_color
 
 
-def initRenderView (dataReader, viewSize, backgroundColor):
+def initRenderView (dataReader, imageSettings):
     # get active view
     renderView1 = GetActiveViewOrCreate('RenderView')
 
@@ -442,8 +442,8 @@ def initRenderView (dataReader, viewSize, backgroundColor):
         pass
 
     # set the view size
-    renderView1.ViewSize = viewSize
-    renderView1.Background = backgroundColor
+    renderView1.ViewSize = imageSettings.view_size
+    renderView1.Background = imageSettings.background_color
 
     # show data in view
     readerDisplay = Show(dataReader, renderView1)
