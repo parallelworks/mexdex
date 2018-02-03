@@ -432,11 +432,13 @@ def setFrame2latestTime(renderView1, verbose=False):
 
 class ImageSettings:
     """ ImageSettings holds image settings and properties"""
-    def __init__(self, magnification=2, view_size=[700,600], background_color = [1,1,1]):
+    def __init__(self, magnification=2, view_size=[700,600],
+                 background_color = [1,1,1], show_axis=0):
         """ Set image magnification, view_size and background_color"""
         self.magnification = magnification
         self.view_size = view_size
         self.background_color = background_color
+        self.show_axis = show_axis
 
 
 def initRenderView (dataReader, imageSettings):
@@ -459,7 +461,7 @@ def initRenderView (dataReader, imageSettings):
     renderView1.ResetCamera()
 
     renderView1.InteractionMode = '2D'
-    renderView1.OrientationAxesVisibility = 0
+    renderView1.OrientationAxesVisibility = imageSettings.show_axis
 
     return renderView1, readerDisplay
 
@@ -972,18 +974,54 @@ def createLine(metrichash, data_reader, outputDir=".", caseNumber=""):
 
 def adjustCamera(view, renderView1, metrichash):
     camera=GetActiveCamera()
-    if view.startswith("iso"):
-        camera.SetFocalPoint(0, 0, 0)
-        if (view == "iso-flipped"):
-            camera.SetPosition(0, 1, 0)
-        else:
-            camera.SetPosition(0, -1, 0)
+    if view == "iso-TN":
+        camera.SetFocalPoint(0,0,0)
+        camera.SetPosition(0,0,1)
+        camera.SetViewUp(0, 1.0, 0)
         renderView1.ResetCamera()
-        # adjust for scale margin
-        camera.SetFocalPoint(camera.GetFocalPoint()[0],camera.GetFocalPoint()[1],camera.GetFocalPoint()[2]-0.25)
-        camera.SetPosition(camera.GetPosition()[0],camera.GetPosition()[1],camera.GetPosition()[2]-1)
-        camera.Elevation(45)
         camera.Azimuth(45)
+        camera.Elevation(45)
+    elif view == 'iso-SE':
+        camera.SetFocalPoint(0,0,0)
+        camera.SetPosition(0,-1,0)
+        camera.SetViewUp(0, 0, 1.0)
+        renderView1.ResetCamera()
+        camera.Azimuth(-45)
+        camera.Elevation(45)
+    elif view == 'iso-NE' or view == 'iso':
+        camera.SetFocalPoint(0,0,0)
+        camera.SetPosition(0,-1,0)
+        camera.SetViewUp(0, 0, 1.0)
+        renderView1.ResetCamera()
+        camera.Azimuth(45)
+        camera.Elevation(45)
+    elif view == 'iso-NW':
+        camera.SetFocalPoint(0, 0, 0)
+        camera.SetPosition(0, -1, 0)
+        camera.SetViewUp(0, 0, 1.0)
+        renderView1.ResetCamera()
+        camera.Azimuth(135)
+        camera.Elevation(45)
+    elif view == 'iso-SW' or view == 'iso-flipped':
+        camera.SetFocalPoint(0, 0, 0)
+        camera.SetPosition(0, -1, 0)
+        camera.SetViewUp(0, 0, 1.0)
+        renderView1.ResetCamera()
+        camera.Azimuth(-135)
+        camera.Elevation(45)
+    # old iso
+    # elif view.startswith("iso"):
+    #     camera.SetFocalPoint(0, 0, 0)
+    #     if (view == "iso-flipped"):
+    #         camera.SetPosition(0, 1, 0)
+    #     else:
+    #         camera.SetPosition(0, -1, 0)
+    #     renderView1.ResetCamera()
+    #     # adjust for scale margin
+    #     camera.SetFocalPoint(camera.GetFocalPoint()[0],camera.GetFocalPoint()[1],camera.GetFocalPoint()[2]-0.25)
+    #     camera.SetPosition(camera.GetPosition()[0],camera.GetPosition()[1],camera.GetPosition()[2]-1)
+    #     camera.Elevation(45)
+    #     camera.Azimuth(45)
     elif view == "+X" or view == "+x" or view == "back": 
         camera.SetFocalPoint(0,0,0)
         camera.SetPosition(1,0,0)
