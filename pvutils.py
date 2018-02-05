@@ -256,7 +256,8 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
 
     UpdatePipeline()
 
-    Times = get_times(metrichash)
+    Times = get_extract_times(metrichash["extractStatsTimeSteps"],
+                                  metrichash["extractStatsTimes"])
 
     anim = GetAnimationScene()
 
@@ -359,7 +360,7 @@ def readDataFile(dataFileAddress, dataarray, convert2cellData=False):
     return dataReader
 
 
-def getTimeSteps():
+def get_source_time_steps():
     # get animation scene
     animationScene1 = GetAnimationScene()
 
@@ -406,21 +407,21 @@ def getTimeStepsSubSet(times, timeStepsStr):
     return timesSubSet
 
 
-def get_times(metrichash):
-    Times = getTimeSteps()
-    if ("extractStatsTimeSteps" in metrichash):
-        Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimeSteps"])
+def get_extract_times(extract_timesteps_key=None, extract_times_key=None):
+    times = get_source_time_steps()
+    if extract_timesteps_key is not None:
+        times = getTimeStepsSubSet(times, extract_timesteps_key)
     else:
         try:
-            Times = data_IO.str2numList(metrichash["extractStatsTimes"])
+            times = data_IO.str2numList(extract_times_key)
         except ValueError:
-            Times = getTimeStepsSubSet(Times, metrichash["extractStatsTimes"])
-    return Times
+            times = getTimeStepsSubSet(times, extract_times_key)
+    return times
 
 
 def setFrame2latestTime(renderView1, verbose=False):
 
-    TimeSteps = getTimeSteps()
+    TimeSteps = get_source_time_steps()
 
     latesttime = TimeSteps[-1]
     if verbose:
@@ -1057,15 +1058,40 @@ def adjustCamera(view, renderView1, metrichash):
         renderView1.CameraParallelProjection = int(metrichash["CameraParallelProjection"])
 
 
+def save_images(outputDir, metrichash, magnification, renderView, case_number=None):
+
+    times = get_extract_times(metrichash["imageTimeSteps"], metrichash["imageTimes"])
+    if not (os.path.exists(outputDir)):
+        if outputDir:
+            os.makedirs(outputDir)
+
+    anim = GetAnimationScene()
+    anim.PlayMode = 'Real Time'
+
+    for i,t in enumerate(times):
+        renderView.ViewTime = t
+        anim.AnimationTime = t
+        if case_number:
+            imageName = metrichash['imageName'].format(int(case_number), i)
+        else:
+            imageName = metrichash['imageName'].format(i)
+        Render()
+        SaveScreenshot(os.path.join(outputDir, imageName), magnification=magnification,
+                                    quality=100)
+    # Set animation mode back to snap to time steps
+    anim.PlayMode = 'Snap To TimeSteps'
+
 def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True):
 
     animationFramesDir = os.path.join(outputDir, 'animFrames','')
     if not (os.path.exists(animationFramesDir)):
         os.makedirs(animationFramesDir)
 
-    WriteAnimation(animationFramesDir + "out_" + kpi + ".png",
+    WriteAnimation(os.path.join(animationFramesDir, "out_" + kpi + ".png"),
                    Magnification=magnification, FrameRate=15.0,
                    Compression=False)
+
+    print(animationName)
 
     subprocess.call(["convert", "-delay", "15",  "-loop",  "0",
                      animationFramesDir + "out_" + kpi + ".*.png",
@@ -1083,7 +1109,7 @@ def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
         os.makedirs(blenderFramesDir)
 
     try:
-        TimeSteps = getTimeSteps()
+        TimeSteps = get_source_time_steps()
         firstTimeStep = TimeSteps[0]
         renderView1 = GetActiveViewOrCreate('RenderView')
         renderView1.ViewTime = firstTimeStep

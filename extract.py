@@ -93,20 +93,14 @@ for kpi in kpihash:
         pvutils.extractStats(pw_filter, kpi, metrichash, fp_csv_metrics)
 
     if kpiimage != "None" and kpiimage != "plot":
-        if not (os.path.exists(outputDir)):
-            if outputDir:
-                os.makedirs(outputDir)
-        if caseNumber:
-            metrichash['imageName'] = metrichash['imageName'].format(int(caseNumber))
-        SaveScreenshot(outputDir + metrichash['imageName'],
-                       magnification=image_settings.magnification, quality=100)
+        pvutils.save_images(outputDir, metrichash, image_settings.magnification,
+                            renderView1, caseNumber)
 
     makeAnim = data_IO.str2bool(metrichash['animation'])
     if makeAnim:
         animationName = metrichash['animationName']
         if caseNumber:
             animationName = animationName.format(int(caseNumber))
-
         pvutils.makeAnimation(outputDir, kpi, image_settings.magnification, animationName)
 
     export2Blender = data_IO.str2bool(metrichash['blender'])

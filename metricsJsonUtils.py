@@ -20,6 +20,24 @@ def readKPIJsonFile(kpiFile):
 #         raise ValueError("")
 
 
+def set_extract_time_defaults(metrichash, kpi, timesteps_key, times_key):
+    if not (timesteps_key in metrichash):
+        metrichash[timesteps_key] = None
+    if not (times_key in metrichash):
+        metrichash[times_key] = None
+
+    # Use metrichash[timesteps_key] if both timesteps_key and
+    # times_key are given
+    if (metrichash[timesteps_key] is not None) and (metrichash[times_key] is not None):
+        warnings.warn("Only set one of \"extractStatsTimeSteps\" or "
+                      "\"extractStatsTimes\" fields for " + kpi +
+                      ". Using \"extractStatsTimeSteps\".")
+
+        # If none of them is provided set to default (last time step)
+    elif (metrichash[timesteps_key] is None) and (metrichash[times_key] is None):
+            metrichash[timesteps_key] = 'last'
+
+
 def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
     if not ('IsParaviewMetric' in metrichash):
         metrichash['IsParaviewMetric'] = 'True'
@@ -97,8 +115,11 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
     if not ('representationType' in metrichash):
         metrichash['representationType'] = 'Surface'
 
-    # Set image name
+
     if not('image' == 'None'):
+        # Set image time(s)
+        set_extract_time_defaults(metrichash, kpi, "imageTimeSteps", "imageTimes")
+        # Set image name
         if not ('imageName' in metrichash):
             if metrichash['image'] == "plot":
                 metrichash['imageName'] = "plot_" + kpi + ".png"
@@ -119,13 +140,8 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
     if not('temporalStats' in metrichash):
         metrichash['temporalStats'] = 'False'
 
-    if ("extractStatsTimeSteps" in metrichash) and ("extractStatsTimes" in metrichash):
-        warnings.warn("Only set one of \"extractStatsTimeSteps\" or "
-                      "\"extractStatsTimes\" fields for " + kpi +
-                      ". Using \"extractStatsTimeSteps\".")
-    elif (not ("extractStatsTimeSteps" in metrichash)) and \
-            (not ("extractStatsTimes" in metrichash)):
-            metrichash['extractStatsTimeSteps'] = 'last'
+    set_extract_time_defaults(metrichash, kpi,
+                              "extractStatsTimeSteps", "extractStatsTimes")
 
     if not data_IO.str2bool(metrichash['extractStats']):
         metrichash['DEXoutputFlag'] = 'none'
