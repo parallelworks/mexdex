@@ -4,6 +4,8 @@ import data_IO
 import os
 import subprocess
 import shutil
+import csv
+import re
 import numpy as np
 
 # For saving plots as pngs
@@ -1058,12 +1060,27 @@ def adjustCamera(view, renderView1, metrichash):
         renderView1.CameraParallelProjection = int(metrichash["CameraParallelProjection"])
 
 
+def write_image_times(csv_file_name,times):
+    fcsv = data_IO.open_file(csv_file_name,'w')
+    csv_writer = csv.writer(fcsv)
+    csv_writer.writerow(["number","time"])
+    for i,t in enumerate(times):
+        csv_writer.writerow([i,t])
+    fcsv.close()
+
+
 def save_images(outputDir, metrichash, magnification, renderView, case_number=None):
 
     times = get_extract_times(metrichash["imageTimeSteps"], metrichash["imageTimes"])
     if not (os.path.exists(outputDir)):
         if outputDir:
             os.makedirs(outputDir)
+
+    # write output times to a csv file
+    csv_file_name = re.sub('{.*?}','',metrichash["imageName"])
+    csv_file_name = os.path.join(outputDir, os.path.splitext(csv_file_name)[0] +
+                                 "_times.csv")
+    write_image_times(csv_file_name, times)
 
     anim = GetAnimationScene()
     anim.PlayMode = 'Real Time'

@@ -218,7 +218,7 @@ def read_int_from_file_line_offset(file_pointer, flag_str, offset=0):
 
 
 def read_ints_from_file_line_offset(file_pointer, flag_str, delimiter=None, offset=0,
-                                    end_line=None):
+                                    end_line=None, end_flag=None):
     """Read integers from a file. First, find a string. Then read all the integers in
     the lines starting from the line at the matched string + offset up to
     line at the matched staring + end_line. By default, start reading from the line
@@ -233,6 +233,9 @@ def read_ints_from_file_line_offset(file_pointer, flag_str, delimiter=None, offs
 
     data = []
     for line in lines[start_index:end_line]:
+        if end_flag:
+            if end_flag in line:
+                break
         data.extend(read_ints_from_string(line, delimiter))
 
     return data
@@ -268,7 +271,12 @@ def read_floats_from_string(str2read, delimiter=None):
 
 
 def read_ints_from_string(str2read, delimiter=None):
+    if delimiter != '\n':
+        str2read = str2read.rstrip('\n')
+    if delimiter is not None:
+        str2read = str2read.replace(' ', '')
     strList = str2read.split(delimiter)
+    strList = list(filter(None,strList))
     intList = [int(i) for i in strList]
     return intList
 
