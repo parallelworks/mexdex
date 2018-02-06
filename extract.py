@@ -1,26 +1,45 @@
 from paraview.simple import *
-import json
-import sys
+import argparse
+
 import pvutils
 import metricsJsonUtils
 import data_IO
 import os
 
-print(sys.argv)
-if len(sys.argv) < 5:
-    print("Number of provided arguments: ", len(sys.argv) - 1)
-    print("Usage: pvpython extract.py  <dataFile>  <desiredMetrics.json> <outputDir> "
-          "<outputMetrics.csv> [caseNumber]  [cellData]")
-    sys.exit()
+parser = argparse.ArgumentParser(
+    description='Extract metrics from all the calculix output files.')
 
+parser.add_argument("data_file_address",
+                    help="The path to the data file to extract data from")
+parser.add_argument("kpi_file_address",
+                    help="The json file that specifies what image(s)/data to extract")
+parser.add_argument("output_dir",
+                    help="The directory for writing the extracted image(s)")
+parser.add_argument("metrics_file",
+                    help="The path of the csv file for writing extracted statistics")
 
-dataFileAddress = sys.argv[1]
-kpiFileAddress = sys.argv[2]
-outputDir = sys.argv[3]
+parser.add_argument("--case_number", default="",
+                    help='A number that can be used for naming output image files. '
+                    'For example, if image name in the kpi file set to '
+                    '"domain{:d}.png", and case_number is set to 1, the output image name'
+                    'would be "domain1.png - default: ""')
+
+parser.add_argument("--convert_to_cell_data", dest='convert2cellData',
+                    action='store_true',
+                    help='If set, a filter will be applied to the data source to convert '
+                    'the Cell Data variables to Point Data variables. This is needed if '
+                    'the source data file uses the Cell Data structure (instead of Point '
+                    'Data) - This conversion is not performed by default')
+parser.set_defaults(convert2cellData=False)
+
+args = parser.parse_args()
+dataFileAddress = args.data_file_address
+kpiFileAddress = args.kpi_file_address
+outputDir = args.output_dir
 outputDir = os.path.join(outputDir, '')
-metricFile = sys.argv[4]
-caseNumber = data_IO.setOptionalSysArgs(sys.argv, "", 5)
-convert2cellData = data_IO.str2bool(data_IO.setOptionalSysArgs(sys.argv, "False", 6))
+metricFile = args.metrics_file
+caseNumber = args.case_number
+convert2cellData = args.convert2cellData
 
 image_settings = pvutils.ImageSettings()
 
