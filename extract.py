@@ -46,10 +46,10 @@ image_settings = pvutils.ImageSettings()
 # Read the desired outputs/metrics from the csv file:
 kpihash = metricsJsonUtils.readKPIJsonFile(kpiFileAddress)[0]
 
+# Set the default values for missing fields in the kpihash
+for kpi in kpihash:
+    kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi], kpi)
 print(kpihash)
-
-# disable automatic camera reset on 'Show'
-paraview.simple._DisableFirstRenderCameraReset()
 
 # Read data file
 fields2Read = pvutils.getfieldsfromkpihash(kpihash)
@@ -60,9 +60,7 @@ renderView1, readerDisplay = pvutils.initRenderView(dataReader, image_settings)
 
 print("Generating KPIs")
 
-# Set the default values for missing fields in the kpihash
 for kpi in kpihash:
-    kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi], kpi)
     if not (kpihash[kpi]['field'] == 'None'):
         kpihash[kpi] = pvutils.correctfieldcomponent(dataReader, kpihash[kpi])
 

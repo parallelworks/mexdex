@@ -187,7 +187,7 @@ def statsOverTime(metrichash, dataSource, dataDisplay):
     return temp_stat
 
 
-def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
+def extractStats(dataSource, statTag, metrichash, fp_csv_metrics):
 
     # Get view before adding the spreadsheets to get back to it afterwards.
     camera = GetActiveCamera()
@@ -276,7 +276,6 @@ def extractStats(dataSource, kpi, metrichash, fp_csv_metrics):
         dStatsDataInfo = dStats.GetDataInformation()
         dStatsStatsInfo = dStatsDataInfo.GetRowDataInformation()
         numStats = dStatsDataInfo.GetRowDataInformation().GetNumberOfArrays()
-        statTag = kpi
         writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statTag, t,
                               isNegField)
 
@@ -416,7 +415,7 @@ def get_extract_times(extract_timesteps_key=None, extract_times_key=None):
     else:
         try:
             times = data_IO.str2numList(extract_times_key)
-        except ValueError:
+        except:
             times = getTimeStepsSubSet(times, extract_times_key)
     return times
 
@@ -445,11 +444,14 @@ class ImageSettings:
 
 
 def initRenderView (dataReader, imageSettings):
+    # disable automatic camera reset on 'Show'
+    paraview.simple._DisableFirstRenderCameraReset()
+
     # get active view
     renderView1 = GetActiveViewOrCreate('RenderView')
 
     try:
-        renderView1 = setFrame2latestTime(renderView1, verbose=True)
+        renderView1 = setFrame2latestTime(renderView1)
     except:
         pass
 
@@ -1060,43 +1062,55 @@ def adjustCamera(view, renderView1, metrichash):
         renderView1.CameraParallelProjection = int(metrichash["CameraParallelProjection"])
 
 
-def write_image_times(csv_file_name,times):
-    fcsv = data_IO.open_file(csv_file_name,'w')
+def write_image_times(csv_file_name, times, image_numbers, append_csv=False):
+    if append_csv:
+        fcsv = data_IO.open_file(csv_file_name,'a')
+    else:
+        fcsv = data_IO.open_file(csv_file_name, 'w')
+
     csv_writer = csv.writer(fcsv)
-    csv_writer.writerow(["number","time"])
+    if not append_csv:
+        csv_writer.writerow(["number","time"])
     for i,t in enumerate(times):
-        csv_writer.writerow([i,t])
+        csv_writer.writerow([image_numbers[i],t])
     fcsv.close()
 
 
-def save_images(outputDir, metrichash, magnification, renderView, case_number=None):
+def save_images(outputDir, metrichash, magnification, renderView, case_number=None,
+                write_image_from=0,append_csv=False):
 
     times = get_extract_times(metrichash["imageTimeSteps"], metrichash["imageTimes"])
-    if not (os.path.exists(outputDir)):
-        if outputDir:
-            os.makedirs(outputDir)
+
+    imageName = os.path.join(outputDir, metrichash["imageName"])
+    outDir = os.path.dirname(imageName)
+    if not (os.path.exists(outDir)):
+        if outDir:
+            os.makedirs(outDir)
 
     # write output times to a csv file
-    csv_file_name = re.sub('{.*?}','',metrichash["imageName"])
-    csv_file_name = os.path.join(outputDir, os.path.splitext(csv_file_name)[0] +
-                                 "_times.csv")
-    write_image_times(csv_file_name, times)
+    csv_file_name = re.sub('{.*?}','',imageName)
+    csv_file_name = os.path.splitext(csv_file_name)[0] + "_times.csv"
 
     anim = GetAnimationScene()
     anim.PlayMode = 'Real Time'
 
+    image_numbers = []
     for i,t in enumerate(times):
         renderView.ViewTime = t
         anim.AnimationTime = t
+        file_image_number = i + write_image_from
         if case_number:
-            imageName = metrichash['imageName'].format(int(case_number), i)
+            imageName_i = imageName.format(int(case_number), file_image_number)
         else:
-            imageName = metrichash['imageName'].format(i)
+            imageName_i = imageName.format(file_image_number)
+        image_numbers.append(file_image_number)
         Render()
-        SaveScreenshot(os.path.join(outputDir, imageName), magnification=magnification,
-                                    quality=100)
+        SaveScreenshot(imageName_i, magnification=magnification, quality=100)
+
+    write_image_times(csv_file_name, times, image_numbers, append_csv=append_csv)
     # Set animation mode back to snap to time steps
     anim.PlayMode = 'Snap To TimeSteps'
+    return times, image_numbers
 
 def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True):
 
