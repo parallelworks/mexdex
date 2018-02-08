@@ -1112,27 +1112,40 @@ def save_images(outputDir, metrichash, magnification, renderView, case_number=No
     anim.PlayMode = 'Snap To TimeSteps'
     return times, image_numbers
 
-def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True,
+
+def write_anim_frames(frames_dir, frame_names, magnification):
+
+    if not (os.path.exists(frames_dir)):
+        os.makedirs(frames_dir)
+
+    WriteAnimation(os.path.join(frames_dir, frame_names),
+                   Magnification=magnification, FrameRate=15.0,
+                   Compression=False)
+
+
+def make_anim_from_frames(animation_frames_dir, frames_name_pattern, anim_file,
+                          delete_frames=True):
+    subprocess.call(["convert", "-delay", "15",  "-loop",  "0",
+                     os.path.join(animation_frames_dir, frames_name_pattern),
+                     anim_file])
+
+    if delete_frames:
+        shutil.rmtree(animation_frames_dir)
+
+
+def makeAnimation(outputDir, kpi, magnification, animationName, delete_frames=True,
                   case_number=None):
     if case_number:
         animationName = animationName.format(int(case_number))
 
-    animationFramesDir = os.path.join(outputDir, 'animFrames','')
-    if not (os.path.exists(animationFramesDir)):
-        os.makedirs(animationFramesDir)
-
-    WriteAnimation(os.path.join(animationFramesDir, "out_" + kpi + ".png"),
-                   Magnification=magnification, FrameRate=15.0,
-                   Compression=False)
-
     print(animationName)
 
-    subprocess.call(["convert", "-delay", "15",  "-loop",  "0",
-                     animationFramesDir + "out_" + kpi + ".*.png",
-                     outputDir + animationName])
+    frames_dir = os.path.join(outputDir, 'animFrames')
 
-    if deleteFrames:
-        shutil.rmtree(animationFramesDir)
+    write_anim_frames(frames_dir, "out_" + kpi + ".png", magnification)
+
+    make_anim_from_frames(frames_dir, "out_" + kpi + ".*.png",
+                          os.path.join(outputDir, animationName), delete_frames)
 
 
 def exportx3d(outputDir,kpi, metricObj, dataReader, renderBody, blenderContext):
