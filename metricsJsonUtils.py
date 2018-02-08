@@ -114,6 +114,8 @@ def setKPIFieldDefaults(metrichash, kpi, caseNumber=""):
         metrichash['opacity'] = "1"
     if not ('representationType' in metrichash):
         metrichash['representationType'] = 'Surface'
+    if not ('per-pass' in metrichash):
+        metrichash['per-pass'] = "true"
 
 
     if not('image' == 'None'):
