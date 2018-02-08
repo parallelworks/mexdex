@@ -67,7 +67,6 @@ for kpi in kpihash:
 fp_csv_metrics = data_IO.open_file(metricFile, "w")
 fp_csv_metrics.write(",".join(['metric','ave','min','max','sd','time'])+"\n")
 
-#pw_filters = []
 for kpi in kpihash:
     if not data_IO.str2bool(kpihash[kpi]['IsParaviewMetric']):
         continue
@@ -82,7 +81,6 @@ for kpi in kpihash:
     
     print(kpi)
     
-    ave = []
     if kpitype == "Slice":
         pw_filter = pvutils.createSlice(metrichash, dataReader, readerDisplay)
     elif kpitype == "WarpByVector":
@@ -113,17 +111,12 @@ for kpi in kpihash:
         pvutils.save_images(outputDir, metrichash, image_settings.magnification,
                             renderView1, caseNumber)
 
-    makeAnim = data_IO.str2bool(metrichash['animation'])
-    if makeAnim:
-        animationName = metrichash['animationName']
-        if caseNumber:
-            animationName = animationName.format(int(caseNumber))
-        pvutils.makeAnimation(outputDir, kpi, image_settings.magnification, animationName)
+    if data_IO.str2bool(metrichash['animation']):
+        pvutils.makeAnimation(outputDir, kpi, image_settings.magnification,
+                              metrichash['animationName'], case_number=caseNumber)
 
-    export2Blender = data_IO.str2bool(metrichash['blender'])
-    if export2Blender:
-        blenderContext=metrichash['blendercontext']
-        renderBody=metrichash['blenderbody']
-        pvutils.exportx3d(outputDir, kpi, pw_filter, dataReader, renderBody, blenderContext)
+    if data_IO.str2bool(metrichash['blender']):
+        pvutils.exportx3d(outputDir, kpi, pw_filter, dataReader,
+                          metrichash['blenderbody'], metrichash['blendercontext'])
 
 fp_csv_metrics.close()

@@ -1112,7 +1112,10 @@ def save_images(outputDir, metrichash, magnification, renderView, case_number=No
     anim.PlayMode = 'Snap To TimeSteps'
     return times, image_numbers
 
-def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True):
+def makeAnimation(outputDir, kpi, magnification, animationName, deleteFrames=True,
+                  case_number=None):
+    if case_number:
+        animationName = animationName.format(int(case_number))
 
     animationFramesDir = os.path.join(outputDir, 'animFrames','')
     if not (os.path.exists(animationFramesDir)):
