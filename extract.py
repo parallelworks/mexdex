@@ -11,7 +11,9 @@ import data_IO
 import sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir) 
+ccx_utils_dir = os.path.join(parentdir, "calculix")
+sys.path.insert(0,ccx_utils_dir) 
+print sys.path
 
 import calculix_utils
 
@@ -227,7 +229,7 @@ for ipass, dataFileAddress in enumerate(ccx_results):
         if data_IO.str2bool(metrichash['animation']):
             if data_IO.str2bool(kpihash[kpi]['per-pass']):
                 pvutils.makeAnimation(outputDir, kpi, image_settings.magnification,
-                                      metrichash['animationName'], delete_frames=False,
+                                      metrichash['animationName'], 
                                       case_number=caseNumber)
             else:
                 if ipass == (len(ccx_results) - 1):
@@ -238,8 +240,7 @@ for ipass, dataFileAddress in enumerate(ccx_results):
                         str(kpihash_main[kpi]['num_written_frames'] - 1) + ']'
                     pvutils.make_anim_from_frames(
                         frames_dir, image_base_name,
-                        os.path.join(outputDir, metrichash['animationName']),
-                        delete_frames=False)
+                        os.path.join(outputDir, metrichash['animationName']))
 
         export2Blender = data_IO.str2bool(metrichash['blender'])
         if export2Blender:

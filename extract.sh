@@ -11,27 +11,21 @@
 # - openFOAM:
 #    ./extract.sh /opt/paraview530/bin elbow-test/system/controlDict elbowKPI.json outputs/  outputs/metrics.csv 0
 
-paraviewPath=$1
+#paraviewPath=$1
+model_step_files=$1
 resultsFile=$2
-desiredMetricsFile=$3
+kpi_file_address=$3
 pvOutputDir=$4
-outputMetrics=$5
+metrics_file=$5
+pass_coordinates_file=$6
 
-if [ $# -ge 6 ]
-then
-	caseNumber="--case_number $6"
+if [[ $# -lt 7 ]]; then
+ 	maxPasses2Run=1000
 else
-	caseNumber=""
-fi
+	maxPasses2Run=$7
+fi 
 
-conver2cellData=""
-if [ $# -eq 7 ]
-then
-	if [ "$7" = true ] ; then
-		convert2cellData="--convert_to_cell_data"
-	fi
-fi
+tar -xf $resultsFile
+tar -xf $model_step_files
 
-xvfb-run -a --server-args="-screen 0 1024x768x24" $paraviewPath/pvpython  --mesa-llvm   extract.py  $resultsFile $desiredMetricsFile  $pvOutputDir $outputMetrics $caseNumber $convert2cellData 
-
-
+xvfb-run -a --server-args="-screen 0 1024x768x24" $PARAVIEWPATH/pvpython  --mesa-llvm utils/mexdex/extract.py $kpi_file_address $pvOutputDir $metrics_file  --inp_file_path_template model_step{:d}.inp -n 2  --pass_coordinates_file $pass_coordinates_file
