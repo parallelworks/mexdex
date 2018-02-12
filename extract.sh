@@ -18,11 +18,12 @@ kpi_file_address=$3
 pvOutputDir=$4
 metrics_file=$5
 pass_coordinates_file=$6
+post_process_results=$7
 
-if [[ $# -lt 7 ]]; then
+if [[ $# -lt 8 ]]; then
  	maxPasses2Run=-1
 else
-	maxPasses2Run=$7
+	maxPasses2Run=$8
 fi 
 
 tar -xf $resultsFile
@@ -30,3 +31,6 @@ tar -xf $model_step_files
 
 export PATH=$PARAVIEWPATH:$PATH  
 xvfb-run -a --server-args="-screen 0 1024x768x24" pvpython  --mesa-llvm utils/mexdex/extract.py $kpi_file_address $pvOutputDir $metrics_file  --inp_file_path_template model_step{:d}.inp -n $maxPasses2Run  --pass_coordinates_file $pass_coordinates_file
+
+tar -zcf out.tar $pvOutputDir 
+cp out.tar $post_process_results
