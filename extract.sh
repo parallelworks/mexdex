@@ -28,4 +28,5 @@ fi
 tar -xf $resultsFile
 tar -xf $model_step_files
 
-xvfb-run -a --server-args="-screen 0 1024x768x24" $PARAVIEWPATH/pvpython  --mesa-llvm utils/mexdex/extract.py $kpi_file_address $pvOutputDir $metrics_file  --inp_file_path_template model_step{:d}.inp -n $maxPasses2Run  --pass_coordinates_file $pass_coordinates_file
+export PATH=$PARAVIEWPATH:$PATH  
+xvfb-run -a --server-args="-screen 0 1024x768x24" pvpython  --mesa-llvm utils/mexdex/extract.py $kpi_file_address $pvOutputDir $metrics_file  --inp_file_path_template model_step{:d}.inp -n $maxPasses2Run  --pass_coordinates_file $pass_coordinates_file
