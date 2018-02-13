@@ -73,13 +73,15 @@ metricFile = args.metrics_file
 caseNumber = args.case_number
 convert2cellData = args.convert2cellData
 inp_file_path_template = args.inp_file_path_template
-num_passes = args.num_input_files
+max_passes = args.num_input_files
 
-# Get num_passes from pass_coordinates if not provided from command line
-if num_passes == -1:
-    pass_coor_file_path = args.pass_coordinates_file
-    weld_passes = calculix_utils.WeldPasses(pass_coor_file_path)
-    num_passes = weld_passes.num_passes
+
+pass_coor_file_path = args.pass_coordinates_file
+weld_passes = calculix_utils.WeldPasses(pass_coor_file_path)
+num_passes = weld_passes.num_passes
+if max_passes != -1:
+    num_passes = min(max_passes, num_passes)
+print("Processing {:d} passes".format(num_passes))
 
 # Make a list of CalculiX input files
 ccx_inputs = []
