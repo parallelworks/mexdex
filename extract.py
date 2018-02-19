@@ -109,7 +109,7 @@ for kpi in kpihash:
 
     if kpiimage != "None" and kpiimage != "plot":
         pvutils.save_images(outputDir, metrichash, image_settings.magnification,
-                            renderView1, caseNumber)
+                            renderView1, pw_filter, caseNumber)
 
     if data_IO.str2bool(metrichash['animation']):
         pvutils.makeAnimation(outputDir, kpi, image_settings.magnification,

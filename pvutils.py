@@ -126,6 +126,7 @@ def writeCurrentStepStats(numStats, dStatsStatsInfo, fp_csv_metrics, statsTag, s
     anim = GetAnimationScene()
     for iStat in range(numStats):
         statName = dStatsStatsInfo.GetArrayInformation(iStat).GetName()
+
         statValue = dStatsStatsInfo.GetArrayInformation(iStat).GetComponentRange(0)[0]
         if statName == 'Maximum':
             if isNegField:
@@ -505,15 +506,9 @@ def get_colorbar_custom_labels(metricash, ctl):
     return labels
 
 
-def colorMetric(d, metrichash):
-    display = GetDisplayProperties(d)
+def setColorBarRange(metrichash, ctf, dataSource):
     kpifld = metrichash['field']
     kpifldcomp = metrichash['fieldComponent']
-    ColorBy(display, ('POINTS', kpifld, kpifldcomp))
-
-    Render()
-    UpdateScalarBars()
-    ctf = GetColorTransferFunction(kpifld)
     try:
         ctf.ApplyPreset(metrichash["colorscale"], True)
     except:
@@ -523,9 +518,9 @@ def colorMetric(d, metrichash):
             ctf.InvertTransferFunction()
     except:
         pass
-    
+
     try:
-        datarange = getdatarange(d, kpifld, kpifldcomp)
+        datarange = getdatarange(dataSource, kpifld, kpifldcomp)
         min = datarange[0]
         max = datarange[1]
         if metrichash["min"] != "auto":
@@ -540,6 +535,45 @@ def colorMetric(d, metrichash):
             ctf.Discretize = 0
     except:
         pass
+
+
+
+def colorMetric(d, metrichash):
+    display = GetDisplayProperties(d)
+    kpifld = metrichash['field']
+    kpifldcomp = metrichash['fieldComponent']
+    ColorBy(display, ('POINTS', kpifld, kpifldcomp))
+
+    Render()
+    UpdateScalarBars()
+    ctf = GetColorTransferFunction(kpifld)
+    setColorBarRange(metrichash, ctf, d)
+    # try:
+    #     ctf.ApplyPreset(metrichash["colorscale"], True)
+    # except:
+    #     pass
+    # try:
+    #     if data_IO.str2bool(metrichash["invertcolor"]):
+    #         ctf.InvertTransferFunction()
+    # except:
+    #     pass
+    #
+    # try:
+    #     datarange = getdatarange(d, kpifld, kpifldcomp)
+    #     min = datarange[0]
+    #     max = datarange[1]
+    #     if metrichash["min"] != "auto":
+    #          min = float(metrichash["min"])
+    #     if metrichash["max"] != "auto":
+    #          max = float(metrichash["max"])
+    #     ctf.RescaleTransferFunction(min, max)
+    #     if int(metrichash["discretecolors"]) > 0:
+    #         ctf.Discretize = 1
+    #         ctf.NumberOfTableValues = int(metrichash["discretecolors"])
+    #     else:
+    #         ctf.Discretize = 0
+    # except:
+    #     pass
 
     renderView1 = GetActiveViewOrCreate('RenderView')
     ctfColorBar = GetScalarBar(ctf, renderView1)
@@ -1076,8 +1110,8 @@ def write_image_times(csv_file_name, times, image_numbers, append_csv=False):
     fcsv.close()
 
 
-def save_images(outputDir, metrichash, magnification, renderView, case_number=None,
-                write_image_from=0,append_csv=False):
+def save_images(outputDir, metrichash, magnification, renderView, pw_filter,
+                case_number=None, write_image_from=0,append_csv=False):
 
     times = get_extract_times(metrichash["imageTimeSteps"], metrichash["imageTimes"])
 
@@ -1095,9 +1129,13 @@ def save_images(outputDir, metrichash, magnification, renderView, case_number=No
     anim.PlayMode = 'Real Time'
 
     image_numbers = []
+    kpifld = metrichash['field']
+    ctf = GetColorTransferFunction(kpifld)
+
     for i,t in enumerate(times):
         renderView.ViewTime = t
         anim.AnimationTime = t
+        setColorBarRange(metrichash, ctf, pw_filter)
         file_image_number = i + write_image_from
         if case_number:
             imageName_i = imageName.format(int(case_number), file_image_number)
