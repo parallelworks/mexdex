@@ -64,16 +64,17 @@ def getParamTypeFromfileAddress(dataFileAddress):
     return paramsType
 
 
-def readcasesfromcsv(casesFile,paramValDelim=','):
+def readcasesfromcsv(casesFile,paramValDelim=',', paramPairDelim = ','):
     f = open(casesFile, "r")
     cases = []
     for i, line in enumerate(f):
-        data = [l.replace("\n", "") for l in line.split(",")]
-        # Combine the parameter labels and their values, if "," is used as delimiter
-        # between them also.
+        # First split all the parameters and values:
+        data = []
+        for paramValPair in line.split(paramPairDelim):
+            data.extend(l.replace("\n", "") for l in paramValPair.split(paramValDelim))
+        # Combine the parameter labels and their values:
         span = 2
-        if paramValDelim == ',':
-            data = [",".join(data[i:i+span]) for i in range(0, len(data), span)]
+        data = [paramValDelim.join(data[i:i+span]) for i in range(0, len(data), span)]
         case = []
         for ii, v in enumerate(data):
             param = {v.split(paramValDelim)[0]: v.split(paramValDelim)[1]}
@@ -83,12 +84,12 @@ def readcasesfromcsv(casesFile,paramValDelim=','):
     return cases
 
 
-def readParamsFile(paramsFile, paramValDelim=','):
+def readParamsFile(paramsFile, paramValDelim=',', paramPairDelim=','):
     paramsFileType = getParamTypeFromfileAddress(paramsFile)
     if paramsFileType == 'paramFile':
         cases = readCases(paramsFile)
     else:
-        cases = readcasesfromcsv(paramsFile, paramValDelim)
+        cases = readcasesfromcsv(paramsFile, paramValDelim, paramPairDelim)
     return cases
 
 

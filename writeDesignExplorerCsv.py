@@ -30,6 +30,11 @@ parser.add_argument("DEX_CSVFile", help="The address of the DEX csv file to be g
 parser.add_argument("--casesList_paramValueDelimiter", default=',',
                     help='The delimiter between parameter names and parameter values in '
                          '<caseListFile> (default:",")')
+
+parser.add_argument("--casesList_paramsDelimiter", default=',',
+                    help='The delimiter to separate parameter/value pairs from each other in '
+                         '<caseListFile> (default:",")')
+
 parser.add_argument('--excludeParams', default='',
                     help='A comma separated list specifying the parameters to exclude '
                          'from inputs or outputs from in DEX. The default is empty.')
@@ -66,6 +71,7 @@ imagesdir = os.path.join(imagesdir, '')
 metricsFilesNameTemplate = args.MEXCsvPathTemplate
 outputParamStatsFile = args.includeOutputParamsFile
 casesListParamValDelim = args.casesList_paramValueDelimiter
+casesListParamPairDelim = args.casesList_paramsDelimiter
 
 ignoreList_default = []
 ignoreList_default = ",".join(ignoreList_default)
@@ -74,7 +80,8 @@ ignoreSet = set(ignoreList.split(","))
 
 # Read the input parameters from the cases.list file (also works with a sweep.run file but
 # make sure the order is the same as cases.list files used for running the cases)
-cases = paramUtils.readParamsFile(caseListFile, paramValDelim=casesListParamValDelim)
+cases = paramUtils.readParamsFile(caseListFile, paramValDelim=casesListParamValDelim,
+                                  paramPairDelim=casesListParamPairDelim)
 print(" Read " + str(len(cases)) + " Cases")
 
 # Get the list of input parameters from the first case
