@@ -7,11 +7,14 @@ import re
 
 from collections import OrderedDict
 
+
 def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter = "\n", withParamType = True):
     with open(paramsFile) as f:
         content = f.read().split(paramsdelimiter)
         if content[-1] == "\n":
             del content[-1]
+        # Replace non-ascii characters with space
+        content = data_IO.remove_non_ascii_list(content)
 
     pvals = {}
     pTypes = {}
