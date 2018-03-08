@@ -42,6 +42,19 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
     return cases, varNames, pTypes
 
 
+def correct_input_variable_names(cases):
+    all_cases_corrected = []
+    for case in cases:
+        corrected_case = []
+        for param_val_pair in case:
+            param_name = next(iter(param_val_pair))
+            param_name_corrected = param_name.replace(',', '_')
+            param_val_pair[param_name_corrected] = param_val_pair.pop(param_name)
+            corrected_case.append(param_val_pair)
+        all_cases_corrected.append(corrected_case)
+    return all_cases_corrected
+
+
 def generate_caselist(cases, pnameValDelimiter='='):
 
     caselist = []
