@@ -82,6 +82,11 @@ ignoreSet = set(ignoreList.split(","))
 # make sure the order is the same as cases.list files used for running the cases)
 cases = paramUtils.readParamsFile(caseListFile, paramValDelim=casesListParamValDelim,
                                   paramPairDelim=casesListParamPairDelim)
+
+# Correct input variable names: Replace comma's with "_"
+cases = paramUtils.correct_input_variable_names(cases)
+
+# cases = paramUtils.correct_input_var_names(cases)
 print(" Read " + str(len(cases)) + " Cases")
 
 # Get the list of input parameters from the first case

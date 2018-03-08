@@ -7,11 +7,14 @@ import re
 
 from collections import OrderedDict
 
+
 def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter = "\n", withParamType = True):
     with open(paramsFile) as f:
         content = f.read().split(paramsdelimiter)
         if content[-1] == "\n":
             del content[-1]
+        # Replace non-ascii characters with space
+        content = data_IO.remove_non_ascii_list(content)
 
     pvals = {}
     pTypes = {}
@@ -37,6 +40,19 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
     cases = [[{varName: val} for varName, val in zip(varNames, prod)] for prod in
              it.product(*(pvals[varName] for varName in varNames))]
     return cases, varNames, pTypes
+
+
+def correct_input_variable_names(cases):
+    all_cases_corrected = []
+    for case in cases:
+        corrected_case = []
+        for param_val_pair in case:
+            param_name = next(iter(param_val_pair))
+            param_name_corrected = param_name.replace(',', '_')
+            param_val_pair[param_name_corrected] = param_val_pair.pop(param_name)
+            corrected_case.append(param_val_pair)
+        all_cases_corrected.append(corrected_case)
+    return all_cases_corrected
 
 
 def generate_caselist(cases, pnameValDelimiter='='):

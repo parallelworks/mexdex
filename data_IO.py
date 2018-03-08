@@ -307,6 +307,19 @@ def setOptionalSysArgs(args, paramDefaultValue, argNumber):
     return param
 
 
+def remove_non_ascii_string(text, replace_char=' '):
+    """remove non-ascii characters from file"""
+    non_ascii_text = ''.join([i if ord(i) < 128 else replace_char for i in text])
+    return non_ascii_text
+
+
+def remove_non_ascii_list(string_list, replace_char=' '):
+    non_ascii_list = []
+    for text in string_list:
+        non_ascii_list.append(remove_non_ascii_string(text, replace_char))
+    return non_ascii_list
+
+
 def byteify(input):
     """
     Got this function from https://stackoverflow.com/questions/2357230/what-is-the-proper-way-to-comment-functions-in-python
