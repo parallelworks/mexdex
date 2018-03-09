@@ -4,6 +4,7 @@ import itertools as it
 import data_IO
 import warnings
 import re
+import os
 
 from collections import OrderedDict
 
@@ -274,7 +275,7 @@ def getOutputParamsStatListOld(outputParamsFileAddress, outputParamNames,
     return outParamsList
 
 
-def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
+def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, zoneNumber, kpihash):
 
     outParamsList = []
 
@@ -285,7 +286,7 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
         readMEXCSVFile = True
 
     if readMEXCSVFile:
-        PVcsvAddress = csvTemplateName.format(caseNumber)
+        PVcsvAddress = csvTemplateName.format(caseNumber, zoneNumber)
         fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
 
     for param in paramTable:
@@ -294,7 +295,7 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
                 fPVcsv, param[0], ',', param[1])
         else:  # Read parameters from other files if provided
             metrichash = kpihash[param[0]]
-            dataFile = metrichash['resultFile'].format(caseNumber)
+            dataFile = metrichash['resultFile'].format(caseNumber, zoneNumber)
             dataFileParamFlag = metrichash['DEXoutputFlag']
             dataFileDelimiter = metrichash['delimiter']
             if not dataFileDelimiter:
@@ -311,26 +312,35 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
     return outParamsList
 
 
-def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist, kpihash):
+def writeOutParamVals2caselist(cases, zone_cases, csvTemplateName, paramTable, caselist,
+                               kpihash):
 
-    # Read the desired metric from output file(s) for each case
-    for icase, case in enumerate(cases):
-        outparamList = readOutParamsForCase(paramTable, csvTemplateName,
-                                            icase, kpihash)
-        caselist[icase] += "," + ",".join(outparamList)
+    # Read the desired metric from output file(s) for each case and each zone
+    case_count = 0
+    for icase, izone in it.product(range(len(cases)), range(len(zone_cases))):
+        outparamList = readOutParamsForCase(paramTable, csvTemplateName, icase,
+                                            izone+1, kpihash)
+        caselist[case_count] += "," + ",".join(outparamList)
+        case_count = case_count + 1
+
 
     return caselist
 
 
-def writeImgs2caselist(cases, imgNames, basePath, pngsDirRel2BasePath, caselist):
-    for icase, case in enumerate(cases):
+def writeImgs2caselist(cases, zone_cases, imgNames, basePath, pngsDirRel2BasePath,
+                       caselist):
+    # for icase, case in enumerate(cases):
+    case_count = 0
+    for icase, izone in it.product(range(len(cases)), range(len(zone_cases))):
+
         caseOutStr = ""
         for imageNameTemplate in imgNames:
-            imageName = imageNameTemplate.format(icase)
+            imageName = imageNameTemplate.format(icase, izone + 1)
 
-            caseOutStr += "," + basePath + pngsDirRel2BasePath.format(icase) +\
-                          imageName.format(icase)
-        caselist[icase] += caseOutStr
+            caseOutStr += "," + os.path.join(basePath, pngsDirRel2BasePath.format(icase),
+                                             imageName)
+        caselist[case_count] += caseOutStr
+        case_count = case_count + 1
     return caselist
 
 
@@ -347,6 +357,13 @@ def mergeParamTypesParamValsDict(paramTypes, paramVals):
     for param in paramTypes:
         paramsTypeVal[param] = {'value':paramVals[param], 'type':paramTypes[param]}
     return paramsTypeVal
+
+
+def merge_cases(case_1, case_2):
+    merged_cases = []
+    for i in it.product(case_1,case_2):
+        merged_cases.append(i[0]+i[1])
+    return merged_cases
 
 
 def writeXMLPWfile(case, paramTypes, xmlFile, helpStr = 'Whitespace delimited or range/step (e.g. min:max:step)',

@@ -53,11 +53,14 @@ if [ "$setRootDir" = true ] ; then
 		--MECsvPathTemplate  $caseDirRoot{:d}/metrics.csv \
 		$caseslistFile $metrics_json $basedir $outcsv
 else
+
+	run_python_in_docker="docker run --rm --user root -i -v `pwd`:/scratch -w /scratch parallelworks/python-tools:v3.6-pandas_rootuser"
+
 	# Works with both python2 and python3 
-	python  $mexdexDir/writeDesignExplorerCsv.py \
+	$run_python_in_docker   python  $mexdexDir/writeDesignExplorerCsv.py \
 		--casesList_paramValueDelimiter  "|"   \
 		--casesList_paramsDelimiter  "|"   \
-		$caseslistFile $metrics_json $basedir/ $outcsv
+		$caseslistFile $metrics_json $basedir/ $outcsv "results/metrics/{:d}/runStatus.csv"
 fi
 
 #

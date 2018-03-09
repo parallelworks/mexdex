@@ -2,6 +2,15 @@ import paramUtils
 import argparse
 import metricsJsonUtils
 import os
+import pandas as pd
+
+# import readZones from ../utils directory
+import sys
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, os.path.join(parentdir,'utils'))
+import readZones
 
 # Generate a csv file for Design Explorer (DEX) from the input parameters and output
 # metrics.
@@ -26,6 +35,13 @@ parser.add_argument("kpiFile",
                          "metrics and images for Metrics Extraction (MEX) Python library")
 parser.add_argument("basePath", help="The path where the DEX csv and html will be put")
 parser.add_argument("DEX_CSVFile", help="The address of the DEX csv file to be generated")
+parser.add_argument("runStatusPathTemplate",
+                    help='The address of the csv files that contain the simulation '
+                         'status for each zone for each case. The case number in the '
+                         'path should be replaced by {:d}. For example,  '
+                         '"results/metrics/{:d}/runStatus.csv" indicates that the run '
+                         ' status files are: "results/metrics/0/runStatus.csv", '
+                         '"results/metrics/1/runStatus.csv", ...')
 
 parser.add_argument("--casesList_paramValueDelimiter", default=',',
                     help='The delimiter between parameter names and parameter values in '
@@ -66,6 +82,7 @@ kpiFile = args.kpiFile
 basepath = args.basePath
 basepath = os.path.join(basepath, '')
 deCSVFile = args.DEX_CSVFile
+runStatusPathTemplate = args.runStatusPathTemplate
 imagesdir = args.imagesDirectory
 imagesdir = os.path.join(imagesdir, '')
 metricsFilesNameTemplate = args.MEXCsvPathTemplate
@@ -82,19 +99,39 @@ ignoreSet = set(ignoreList.split(","))
 # make sure the order is the same as cases.list files used for running the cases)
 cases = paramUtils.readParamsFile(caseListFile, paramValDelim=casesListParamValDelim,
                                   paramPairDelim=casesListParamPairDelim)
+num_cases = len(cases)
 
 # Correct input variable names: Replace comma's with "_"
 cases = paramUtils.correct_input_variable_names(cases)
 
 # cases = paramUtils.correct_input_var_names(cases)
-print(" Read " + str(len(cases)) + " Cases")
+print(" Read {:d} cases.".format(num_cases))
+
+# Get zone names and run statuses from the runStatus files
+zone_names = readZones.read_zone_names_from_status_file(runStatusPathTemplate.format(0))
+num_zones = len(zone_names)
+zone_name_cases, _ = readZones.read_all_zones_status_files(runStatusPathTemplate,
+                                                           num_cases)
+
+# Expand caselist to add zones
+cases_merged = paramUtils.merge_cases(cases, zone_name_cases)
+
+
+print("Total number of cases: {:d} x {:d} = {:d}".format(num_cases, num_zones,
+                                                         len(cases_merged)))
 
 # Get the list of input parameters from the first case
-inputVarNames = paramUtils.getParamNamesFromCase(cases[0])
+inputVarNames = paramUtils.getParamNamesFromCase(cases_merged[0])
 inputVarNames = list(set(inputVarNames)-ignoreSet)
 
 # Add the values of input parameters for each case to caselist
-caselist = paramUtils.writeInputParamVals2caselist(cases, inputVarNames)
+caselist = paramUtils.writeInputParamVals2caselist(cases_merged, inputVarNames)
+
+for item in cases_merged:
+    print(item)
+print(inputVarNames)
+for item in caselist:
+    print(item)
 
 # Read the kpihash and set the default values for missing fields
 [kpihash, orderPreservedKeys] = metricsJsonUtils.readKPIJsonFile(kpiFile)
@@ -105,14 +142,19 @@ for kpi in kpihash:
 outParamTable = paramUtils.getOutputParamsFromKPI(kpihash, orderPreservedKeys, ignoreSet)
 
 # Read the desired metric from each output file and add them to caselist
-caselist = paramUtils.writeOutParamVals2caselist(cases, metricsFilesNameTemplate,
+caselist = paramUtils.writeOutParamVals2caselist(cases, zone_name_cases,
+                                                 metricsFilesNameTemplate,
                                                  outParamTable, caselist, kpihash)
+
+print('caselist with outputs')
+for item in caselist:
+    print(item)
 
 # Get the list of desired images
 imgList, imgNames = paramUtils.getOutImgsFromKPI(kpihash, orderPreservedKeys)
 
-caselist = paramUtils.writeImgs2caselist(cases, imgNames, basepath, imagesdir,
-                                         caselist)
+caselist = paramUtils.writeImgs2caselist(cases, zone_name_cases, imgNames, basepath,
+                                         imagesdir, caselist)
 
 # Write the header of the DEX csv file
 header = paramUtils.generateHeader(inputVarNames, outParamTable, imgList)
