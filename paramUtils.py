@@ -319,7 +319,7 @@ def writeOutParamVals2caselist(cases, zone_cases, csvTemplateName, paramTable, c
     case_count = 0
     for icase, izone in it.product(range(len(cases)), range(len(zone_cases))):
         outparamList = readOutParamsForCase(paramTable, csvTemplateName, icase,
-                                            izone+1, kpihash)
+                                            izone, kpihash)
         caselist[case_count] += "," + ",".join(outparamList)
         case_count = case_count + 1
 
@@ -335,7 +335,7 @@ def writeImgs2caselist(cases, zone_cases, imgNames, basePath, pngsDirRel2BasePat
 
         caseOutStr = ""
         for imageNameTemplate in imgNames:
-            imageName = imageNameTemplate.format(icase, izone + 1)
+            imageName = imageNameTemplate.format(icase, izone)
 
             caseOutStr += "," + os.path.join(basePath, pngsDirRel2BasePath.format(icase),
                                              imageName)
