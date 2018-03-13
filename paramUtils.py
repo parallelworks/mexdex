@@ -50,6 +50,10 @@ def correct_input_variable_names(cases):
         for param_val_pair in case:
             param_name = next(iter(param_val_pair))
             param_name_corrected = param_name.replace(',', '_')
+            param_name_corrected = param_name_corrected.replace('(', '[')
+            param_name_corrected = param_name_corrected.replace(')', ']')
+            param_name_corrected = param_name_corrected.replace(':', '')
+            param_name_corrected = param_name_corrected.replace('/', '_div_')
             param_val_pair[param_name_corrected] = param_val_pair.pop(param_name)
             corrected_case.append(param_val_pair)
         all_cases_corrected.append(corrected_case)
