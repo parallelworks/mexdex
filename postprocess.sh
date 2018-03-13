@@ -24,7 +24,7 @@ then
 	setRootDir=true
 fi
 
-colorby="stl"
+colorby="aveSL"
 
 echo $@
 
