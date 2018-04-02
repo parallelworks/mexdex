@@ -32,10 +32,18 @@ parser.add_argument("--withParamTag", dest='withParamTag', action='store_true',
 parser.add_argument("--noParamTag", dest='withParamTag', action='store_false',
                     help='If set, no tag is expected between the parameter name and its value.')
 
-
 parser.add_argument("--CL_paramValueDelimiter", default=',',
                     help='The delimiter between a parameter name and its value in '
                          '<casesListFile> (default:",")')
+
+
+parser.add_argument("--separateParamFilesPath", default="",
+                    help='The path for writing separate parameter files for each case.'
+                         'For example, if set to "paramFiles/case_{:d}.in", in addition '
+                         'to <casesListFile>, inputs for each case would be written into'
+                         'single files of "paramFiles/case_0.in", "paramFiles/case_1.in"'
+                         'and ... (default is empty :""/no separate input file would be'
+                         'generated).')
 
 parser.set_defaults(withParamTag=True)
 
@@ -48,6 +56,7 @@ SR_paramsDelimiter = data_IO.correctDelimiterInputStrs(args.SR_paramsDelimiter)
 SR_withParamTag = args.withParamTag
 SR_paramValueDelimiter = data_IO.correctDelimiterInputStrs(args.SR_paramValueDelimiter)
 CL_paramValueDelimiter = data_IO.correctDelimiterInputStrs(args.CL_paramValueDelimiter)
+separateParamFilesPath = args.separateParamFilesPath
 
 cases = paramUtils.readCases(paramsFile,
                              valsdelimiter=SR_valsdelimiter,
@@ -64,3 +73,14 @@ casel = "\n".join(caselist)
 f = data_IO.open_file(casesListFile, "w")
 f.write(casel)
 f.close()
+
+# Write input paramters into separate files:
+
+caseslist = paramUtils.generate_caselist(cases, pnameValDelimiter='\n',
+                                         paramValPairDelimiter='\n')
+
+if separateParamFilesPath:
+    for i, case in enumerate(caseslist):
+        fsimParm = data_IO.open_file(separateParamFilesPath.format(i),'w')
+        fsimParm.write(case)
+        fsimParm.close()

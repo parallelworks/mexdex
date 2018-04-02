@@ -16,8 +16,8 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
         # Replace non-ascii characters with space
         content = data_IO.remove_non_ascii_list(content)
 
-    pvals = {}
-    pTypes = {}
+    pvals = OrderedDict({})
+    pTypes = OrderedDict({})
     for x in content:
         if "null" not in x and x != "":
             pname = x.split(namesdelimiter)[0]
@@ -36,9 +36,11 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
             if withParamType:
                 pTypes[pname] = pType
 
-    varNames = sorted(pvals)
+    varNames = list(pvals.keys())
+    #
     cases = [[{varName: val} for varName, val in zip(varNames, prod)] for prod in
              it.product(*(pvals[varName] for varName in varNames))]
+
     return cases, varNames, pTypes
 
 
@@ -59,7 +61,7 @@ def correct_input_variable_names(cases):
     return all_cases_corrected
 
 
-def generate_caselist(cases, pnameValDelimiter='='):
+def generate_caselist(cases, pnameValDelimiter='=', paramValPairDelimiter=","):
 
     caselist = []
     for c in cases:
@@ -67,7 +69,7 @@ def generate_caselist(cases, pnameValDelimiter='='):
         for p in c:
             pname = list(p.keys())[0]
             pval = p[pname]
-            case += pname + pnameValDelimiter + pval + ","
+            case += pname + pnameValDelimiter + pval + paramValPairDelimiter
         caselist.append(case[:-1])
     return caselist
 
