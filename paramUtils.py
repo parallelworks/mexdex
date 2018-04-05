@@ -31,7 +31,7 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
             elif ":" in pval:
                 pval = data_IO.expandVars(pval).split(",")
             else:
-                pval = [pval]
+                pval = [pval.rstrip()]
             pvals[pname] = pval
             if withParamType:
                 pTypes[pname] = pType
@@ -53,6 +53,8 @@ def correct_input_variable_names(cases):
             param_name_corrected = param_name.replace(',', '_')
             param_name_corrected = param_name_corrected.replace('(', '_')
             param_name_corrected = param_name_corrected.replace(')', '_')
+            param_name_corrected = param_name_corrected.replace('[', '_')
+            param_name_corrected = param_name_corrected.replace(']', '_')
             param_name_corrected = param_name_corrected.replace(':', '')
             param_name_corrected = param_name_corrected.replace('/', '_div_')
             param_val_pair[param_name_corrected] = param_val_pair.pop(param_name)

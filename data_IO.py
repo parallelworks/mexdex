@@ -41,7 +41,7 @@ def textStartsWithExactMath(text, flag_str, delimiter):
     if delimiter is None:
         delimiter = '\\b'
     if flag_str:
-        if re.match(flag_str+delimiter, text):
+        if text.startswith(flag_str + delimiter):
             return True
         else:
             return False
@@ -145,11 +145,20 @@ def read_float_from_file_pointer(file_pointer, flag_str, delimiter=None,
     data = []
     num_words_in_flag = len(flag_str.split())
     file_pointer.seek(0)
-    for line in file_pointer:
+    lines = file_pointer.readlines()
+    for i, line in enumerate(lines):
         if textStartsWithExactMath(line, flag_str, delimiter):
             if len(flag_str) > 0:
-                line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
-            data = float(line.split(delimiter)[startIndex])
+                if delimiter != "\n":
+                    line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
+                    data = float(line.split(delimiter)[startIndex])
+                else:
+                    data = float(lines[i+1+startIndex])
+            else:
+                if delimiter != "\n":
+                    data = float(line.split(delimiter)[startIndex])
+                else:
+                    data = float(lines[i+1+startIndex])
             break
     if not isinstance(data, float):
         print("Error: cannot read ", flag_str, " from input file")
