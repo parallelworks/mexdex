@@ -1063,28 +1063,34 @@ def adjustCamera(view, renderView1, metrichash):
     #     camera.Azimuth(45)
     elif view == "+X" or view == "+x" or view == "back": 
         camera.SetFocalPoint(0,0,0)
-        camera.SetPosition(1,0,0)
+        camera.SetPosition(1, 0, 0)
+        camera.SetViewUp(0, 0, 1)
         renderView1.ResetCamera()
     elif view == "-X" or view == "-x" or view == "front": 
         camera.SetFocalPoint(0,0,0)
         camera.SetPosition(-1,0,0)
+        camera.SetViewUp(0, 0, 1)
         renderView1.ResetCamera()
     elif view == "+Y" or view == "+y" or view == "right": 
         camera.SetFocalPoint(0,0,0)
         camera.SetPosition(0,1,0)
+        camera.SetViewUp(0, 0, 1)
         renderView1.ResetCamera()
     elif view == "-Y" or view == "-y" or view == "left": 
         camera.SetFocalPoint(0,0,0)
         camera.SetPosition(0,-1,0)
+        camera.SetViewUp(0, 0, 1)
         renderView1.ResetCamera()
     elif view == "+Z" or view == "+z" or view == "top": 
         camera.SetFocalPoint(0,0,0)
         camera.SetPosition(0,0,1)
+        camera.SetViewUp(0, 1, 0)
         renderView1.ResetCamera()
         #        camera.Roll(90)
     elif view == "-Z" or view == "-z" or view == "bottom": 
         camera.SetFocalPoint(0,0,0)
         camera.SetPosition(0,0,-1)
+        camera.SetViewUp(0, 1, 0)
         renderView1.ResetCamera()
         #       camera.Roll(-90)
     elif view == "customize":
