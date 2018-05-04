@@ -370,10 +370,10 @@ def get_source_time_steps():
     animationScene1.UpdateAnimationUsingDataTimeSteps()
 
     timeSteps = []
-    if len(animationScene1.TimeKeeper.TimestepValues) == 0:
+    if type(animationScene1.TimeKeeper.TimestepValues)== int or type(animationScene1.TimeKeeper.TimestepValues)== float:
+        timeSteps.append(animationScene1.TimeKeeper.TimestepValues)
+    elif len(animationScene1.TimeKeeper.TimestepValues) == 0:
         timeSteps = [0]
-    elif type(animationScene1.TimeKeeper.TimestepValues)== int or type(animationScene1.TimeKeeper.TimestepValues)== float:
-        timeSteps.append(animationScene1.TimeKeeper.TimestepValues)       
     else:
         timeSteps = list(animationScene1.TimeKeeper.TimestepValues)
 
