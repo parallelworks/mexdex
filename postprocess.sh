@@ -53,8 +53,6 @@ if [ "$setRootDir" = true ] ; then
 else
 	# Works with both python2 and python3 
 	python  $mexdexDir/writeDesignExplorerCsv.py \
-		--casesList_paramValueDelimiter  "|"   \
-		--casesList_paramsDelimiter  "|"   \
 		$caseslistFile $metrics_json $basedir/ $outcsv
 fi
 
