@@ -45,6 +45,13 @@ parser.add_argument("--separateParamFilesPath", default="",
                          'and ... (default is empty :""/no separate input file would be'
                          'generated).')
 
+parser.add_argument("--SepFile_paramValueDelimiter", default='\n',
+                    help='The delimiter between a parameter name and its value in '
+                         '<seperateParamFiles> (default:"\n")')
+parser.add_argument("--SepFile_paramsDelimiter", default='\n',
+                    help='The delimiter to separate parameter/value pairs from each '
+                         'other in <seperateParamFiles> (default:"\n")')
+
 parser.set_defaults(withParamTag=True)
 
 
@@ -56,6 +63,10 @@ SR_paramsDelimiter = data_IO.correctDelimiterInputStrs(args.SR_paramsDelimiter)
 SR_withParamTag = args.withParamTag
 SR_paramValueDelimiter = data_IO.correctDelimiterInputStrs(args.SR_paramValueDelimiter)
 CL_paramValueDelimiter = data_IO.correctDelimiterInputStrs(args.CL_paramValueDelimiter)
+SepFile_paramValueDelimiter = data_IO.correctDelimiterInputStrs(
+    args.SepFile_paramValueDelimiter)
+SepFile_paramsDelimiter = data_IO.correctDelimiterInputStrs(
+    args.SepFile_paramsDelimiter)
 separateParamFilesPath = args.separateParamFilesPath
 
 cases = paramUtils.readCases(paramsFile,
@@ -76,8 +87,9 @@ f.close()
 
 # Write input paramters into separate files:
 
-caseslist = paramUtils.generate_caselist(cases, pnameValDelimiter='\n',
-                                         paramValPairDelimiter='\n')
+caseslist = paramUtils.generate_caselist(cases,
+                                         pnameValDelimiter=SepFile_paramValueDelimiter,
+                                         paramValPairDelimiter=SepFile_paramsDelimiter)
 
 if separateParamFilesPath:
     for i, case in enumerate(caseslist):
