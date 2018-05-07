@@ -23,7 +23,7 @@ then
 	setRootDir=true
 fi
 
-colorby="stl"
+colorby="heat_capacitor_end_Temp"
 
 echo $@
 
