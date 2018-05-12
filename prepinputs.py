@@ -1,10 +1,13 @@
 import paramUtils
 import argparse
 import data_IO
+from string import Template
 
 parser = argparse.ArgumentParser(
     description='Generate the caseList file which lists the parameter names and values '
-    'for each simulation case per line by expanding the parameters in the sweep.run file.')
+                'for each simulation case per line by expanding the parameters in the'
+                'sweep.run file. In addition, separate (templated) input files can also '
+                'be generated if a path is provided.')
 
 parser.add_argument("sweepRunFile",
                     help="The sweepRunFile file contains parameter names and their values.")
@@ -45,6 +48,20 @@ parser.add_argument("--separateParamFilesPath", default="",
                          'and ... (default is empty :""/no separate input file would be'
                          'generated).')
 
+parser.add_argument("--separateParamFileTemplate", default="",
+                    help='The path for a template file for writing separate parameter '
+                         'files for each case. The case parameters will be substituted '
+                         'in the template file with the paramter values for each case.'
+                         'The substitutions can be specified by using the '
+                         'parameter names as identifiers. Identifiers must match the '
+                         'parameter names in the <sweepRunFile>. For example'
+                         'to substitute param1 with its value use "$param1" or '
+                         '"${param1} in the template file where "$" is the '
+                         'delimiter for substitution. '
+                         '(default is empty :"" in which case the separate '
+                         'input files would be simply written based on the '
+                         'given/default delimiters.)')
+
 parser.add_argument("--SepFile_paramValueDelimiter", default='\n',
                     help='The delimiter between a parameter name and its value in '
                          '<seperateParamFiles> (default:"\n")')
@@ -68,6 +85,7 @@ SepFile_paramValueDelimiter = data_IO.correctDelimiterInputStrs(
 SepFile_paramsDelimiter = data_IO.correctDelimiterInputStrs(
     args.SepFile_paramsDelimiter)
 separateParamFilesPath = args.separateParamFilesPath
+separateParamFileTemplate = args.separateParamFileTemplate
 
 cases = paramUtils.readCases(paramsFile,
                              valsdelimiter=SR_valsdelimiter,
@@ -86,13 +104,26 @@ f.write(casel)
 f.close()
 
 # Write input paramters into separate files:
-
-caseslist = paramUtils.generate_caselist(cases,
-                                         pnameValDelimiter=SepFile_paramValueDelimiter,
-                                         paramValPairDelimiter=SepFile_paramsDelimiter)
-
 if separateParamFilesPath:
-    for i, case in enumerate(caseslist):
-        fsimParm = data_IO.open_file(separateParamFilesPath.format(i),'w')
-        fsimParm.write(case)
-        fsimParm.close()
+
+    # Use a template for generating the separate files
+    if separateParamFileTemplate:
+        ftemp = data_IO.open_file(separateParamFileTemplate)
+        template_output = Template(ftemp.read())
+        ftemp.close()
+
+        for i, case in enumerate(cases):
+            caseDict = paramUtils.convertListOfDicts2Dict(case)
+            fsimParm = data_IO.open_file(separateParamFilesPath.format(i), 'w')
+            fsimParm.write(template_output.substitute(caseDict))
+            fsimParm.close()
+    else:
+        caseslist = paramUtils.generate_caselist(
+            cases,
+            pnameValDelimiter=SepFile_paramValueDelimiter,
+            paramValPairDelimiter=SepFile_paramsDelimiter)
+
+        for i, case in enumerate(caseslist):
+            fsimParm = data_IO.open_file(separateParamFilesPath.format(i),'w')
+            fsimParm.write(case)
+            fsimParm.close()
