@@ -23,7 +23,7 @@ then
 	setRootDir=true
 fi
 
-colorby="stl"
+colorby="ave_cluster_size"
 
 echo $@
 
