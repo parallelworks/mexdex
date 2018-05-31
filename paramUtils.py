@@ -26,12 +26,9 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
                 pval = x.split(namesdelimiter)[2]
             else:
                 pval = x.split(namesdelimiter)[1]
-            if valsdelimiter in pval:
-                pval = pval.split(valsdelimiter)
-            elif ":" in pval:
-                pval = data_IO.expandVars(pval).split(",")
-            else:
-                pval = [pval.rstrip()]
+
+            pval = data_IO.parse_pval(pval)
+
             pvals[pname] = pval
             if withParamType:
                 pTypes[pname] = pType

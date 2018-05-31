@@ -66,7 +66,7 @@ def isInt(s):
         return False
 
 
-def frange(a, b, inc):
+def frange_old(a, b, inc):
     if isInt(a) and isInt(b) and isInt(inc):
         a = int(a)
         b = int(b)
@@ -81,12 +81,44 @@ def frange(a, b, inc):
     return (str(e) for e in x)
 
 
+def frange(a, b, inc):
+    if isInt(a) and isInt(b) and isInt(inc):
+        a=int(a)
+        b=int(b)
+        inc=int(inc)
+    else:
+        a=float(a)
+        b=float(b)
+        inc=float(inc)
+    x = [a]
+    if inc > 0:
+        while x[-1]+inc-b < 1e-15:
+            x.append(x[-1] + inc)
+    else:
+        while x[-1]+inc-b > -1e-15:
+            x.append(x[-1] + inc)
+    return (str(e) for e in x)
+
+
 def expandVars(v, RangeDelimiter = ':'):
     min = v.split(RangeDelimiter)[0]
     max = v.split(RangeDelimiter)[1]
     step = v.split(RangeDelimiter)[2]
     v = ','.join(frange(min, max, step))
     return v
+
+
+def parse_pval(pval, valsdelimiter="_"):
+    # First remove redundant (multiple/leading/trailing) delimiters in pval
+    pval = ' '.join(pval.replace(valsdelimiter, ' ').split())
+    pval = pval.split(" ")
+    values = []
+    for value in pval:
+        if ":" in value:
+            values.extend(expandVars(value).split(","))
+        else:
+            values.extend([value])
+    return values
 
 
 def str2numList(pval, valsdelimiter=','):
