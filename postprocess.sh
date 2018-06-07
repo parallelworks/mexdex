@@ -23,7 +23,7 @@ then
 	setRootDir=true
 fi
 
-colorby="ave_cluster_size"
+colorby="number_of_clusters"
 
 echo $@
 
