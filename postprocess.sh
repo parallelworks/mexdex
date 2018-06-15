@@ -23,7 +23,7 @@ then
 	setRootDir=true
 fi
 
-colorby="stl"
+colorby="Overflow_max"
 
 echo $@
 
@@ -41,18 +41,21 @@ fi
 #
 # Generate the design explorer csv file:
 #
+pythonPath="/cygdrive/c/ProgramData/Anaconda3/"
+
 if [ "$setRootDir" = true ] ; then
 	# If the root directories are provided as input to this script, set them when calling mexdex/writeDesignExplorerCsv.py 
 	# Works with both python2 and python3 
-	python   $mexdexDir/writeDesignExplorerCsv.py \
+    $pythonPath/python   $mexdexDir/writeDesignExplorerCsv.py \
 		--casesList_paramValueDelimiter "=" \
 		--imagesDirectory $pngOutDirRoot{:d} \
 		--includeOutputParamsFile $outputsList4DE \
 		--MECsvPathTemplate  $caseDirRoot{:d}/metrics.csv \
 		$caseslistFile $metrics_json $basedir $outcsv
 else
-	# Works with both python2 and python3 
-	python  $mexdexDir/writeDesignExplorerCsv.py \
+    # Works with both python2 and python3   
+    $pythonPath/python  $mexdexDir/writeDesignExplorerCsv.py \
+			--casesList_paramValueDelimiter  "=" \
 		$caseslistFile $metrics_json $basedir/ $outcsv
 fi
 
