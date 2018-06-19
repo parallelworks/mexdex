@@ -58,6 +58,21 @@ def str2slice(text):
         *map(lambda x: int(x.strip()) if x.strip() else None, text.split(':')))
 
 
+def str_2_int_list(text):
+    """
+    This function parses a string and returns a list of integers or an slice object
+    :param text: Examples: "1" -> [1], "1,2" -> [1,2], "1:4:2" -> slice(1,4,2)
+    :return: returns a list of integers or a slice object
+    """
+    if ":" in text:
+        int_list = str2slice(text)
+    elif "," in text:
+        int_list = read_ints_from_string(text, ",")
+    else:
+        int_list = [int(text)]
+    return int_list
+
+
 def isInt(s):
     try:
         int(s)
