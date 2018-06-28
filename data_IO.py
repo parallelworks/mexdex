@@ -187,47 +187,49 @@ def read_floats_from_file_pointer(file_pointer, flag_str, num_data,
     return data
 
 
-def read_float_from_file_pointer(file_pointer, flag_str, delimiter=None,
-                                 startIndex=0):
-    data = []
-    num_words_in_flag = len(flag_str.split())
+def read_string_from_file_pointer(file_pointer, flag_str, delimiter=None,
+                                  start_index=0):
+    data = None
     file_pointer.seek(0)
     lines = file_pointer.readlines()
     for i, line in enumerate(lines):
         if textStartsWithExactMath(line, flag_str, delimiter):
             if len(flag_str) > 0:
-                if delimiter != "\n":
-                    line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
-                    data = float(line.split(delimiter)[startIndex])
-                else:
-                    data = float(lines[i+1+startIndex])
+                # Remove flag from the beginning of line
+                line = line[len(flag_str + xstr(delimiter)):]
+            if delimiter != "\n":
+                data = line.split(delimiter)[start_index]
             else:
-                if delimiter != "\n":
-                    data = float(line.split(delimiter)[startIndex])
-                else:
-                    data = float(lines[i+1+startIndex])
+                data = lines[i + 1 + start_index]
+
             break
-    if not isinstance(data, float):
-        print("Error: cannot read ", flag_str, " from input file")
-        sys.exit(1)
+    if not data:
+        print("Error: cannot read ", flag_str, " from file ", file_pointer.name)
+        raise ValueError
     return data
 
 
-def read_int_from_file_pointer(file_pointer, flag_str, delimiter=None,
-                                 startIndex=0):
-    data = []
-    num_words_in_flag = len(flag_str.split())
-    file_pointer.seek(0)
-    for line in file_pointer:
-        if textStartsWithExactMath(line, flag_str, delimiter):
-            if len(flag_str) > 0:
-                line = line[len(flag_str + xstr(delimiter)):]  # Remove flag from the beginning of line
-            data = int(line.split(delimiter)[startIndex])
-            break
-    if not isinstance(data, int):
-        print("Error: cannot read ", flag_str, " from input file")
-        sys.exit(1)
-    return data
+def read_float_from_file_pointer(file_pointer, flag_str, delimiter=None,
+                                 start_index=0):
+    try:
+        data = read_string_from_file_pointer(file_pointer, flag_str, delimiter,
+                                             start_index)
+        float_number = float(data)
+    except ValueError:
+        print('Error reading float {} from file {}'.format(flag_str, file_pointer.name))
+        raise ValueError
+    return float_number
+
+
+def read_int_from_file_pointer(file_pointer, flag_str, delimiter=None, start_index=0):
+    try:
+        data = read_string_from_file_pointer(file_pointer, flag_str, delimiter,
+                                             start_index)
+        int_number = int(data)
+    except ValueError:
+        print('Error reading int {} from file {}'.format(flag_str, file_pointer.name))
+        raise ValueError
+    return int_number
 
 
 def read_int_from_strList(strList, flag_str, delimiter=None, startIndexInLine=0,
