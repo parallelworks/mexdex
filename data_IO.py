@@ -349,7 +349,7 @@ def open_file(file_name, open_mode="r"):
         return file_pointer
     except IOError:
         print("Error: cannot open file", file_name)
-        sys.exit(1)
+        raise IOError
 
 
 def tarDirectory(output_filename, source_dir, compressMode="w"):

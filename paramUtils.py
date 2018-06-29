@@ -299,12 +299,19 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
 
     if readMEXCSVFile:
         PVcsvAddress = csvTemplateName.format(caseNumber)
-        fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
 
     for param in paramTable:
         if param[1] >= 0: # Read the parameters from a Mex (Paraview) .csv file
-            param_icase = data_IO.read_float_from_file_pointer(
-                fPVcsv, param[0], ',', param[1])
+            try:
+                fPVcsv = data_IO.open_file(PVcsvAddress, 'r')
+                param_icase = data_IO.read_float_from_file_pointer(
+                    fPVcsv, param[0], ',', param[1])
+                fPVcsv.close()
+            except (IOError, ValueError):
+                print('Error reading {} from file {}. Setting value to '
+                      'NaN'.format(param[0], PVcsvAddress))
+                param_icase = float('NaN')
+
         else:  # Read parameters from other files if provided
             metrichash = kpihash[param[0]]
             dataFile = metrichash['resultFile'].format(caseNumber)
@@ -312,15 +319,20 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
             dataFileDelimiter = metrichash['delimiter']
             if not dataFileDelimiter:
                 dataFileDelimiter = None
-            locnInOutFile = int(metrichash['locationInFile']) - 1  # Start from 0
-            fdataFile = data_IO.open_file(dataFile, 'r')
-            param_icase = data_IO.read_float_from_file_pointer(
-                fdataFile, dataFileParamFlag, dataFileDelimiter, locnInOutFile)
-            fdataFile.close()
+            locnInOutFile = int(metrichash['locationInFile']) - 1
+            # Start from 0
+            try:
+                fdataFile = data_IO.open_file(dataFile, 'r')
+                param_icase = data_IO.read_float_from_file_pointer(
+                    fdataFile, dataFileParamFlag, dataFileDelimiter, locnInOutFile)
+                fdataFile.close()
+            except (IOError, ValueError):
+                print('Error reading {} from file {}. Setting value to '
+                      'NaN'.format(dataFileParamFlag,dataFile))
+                param_icase = float('NaN')
         outParamsList.append(str(param_icase))
 
-    if readMEXCSVFile:
-        fPVcsv.close()
+
     return outParamsList
 
 
@@ -348,7 +360,7 @@ def writeImgs2caselist(cases, imgNames, basePath, pngsDirRel2BasePath, caselist)
 
 
 def writeDesignExplorerCSVfile(deCSVFile, header, caselist):
-    f = open(deCSVFile, "w")
+    f = data_IO.open_file(deCSVFile, 'w')
     f.write(header + '\n')
     casel = "\n".join(caselist)
     f.write(casel + '\n')
