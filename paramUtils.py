@@ -1,14 +1,19 @@
 import math
 import sys
 import itertools as it
-import data_IO
 import warnings
 import re
+from lxml import etree
+
 
 from collections import OrderedDict
 
+import data_IO
+import input_form
 
-def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter = "\n", withParamType = True):
+
+def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",
+              paramsdelimiter = "\n", withParamType = True):
     with open(paramsFile) as f:
         content = f.read().split(paramsdelimiter)
         if content[-1] == "\n":
@@ -32,6 +37,8 @@ def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",paramsdelimiter 
             pvals[pname] = pval
             if withParamType:
                 pTypes[pname] = pType
+            else:
+                pTypes[pname] = None
 
     varNames = list(pvals.keys())
     #
@@ -362,7 +369,7 @@ def merge_cases(case_1, case_2):
     return merged_cases
 
 
-def writeXMLPWfile(case, paramTypes, xmlFile, helpStr = 'Whitespace delimited or range/step (e.g. min:max:step)',
+def writeXMLPWfile_old(case, paramTypes, xmlFile, helpStr = 'Whitespace delimited or range/step (e.g. min:max:step)',
                    paramUnits=[]):
     """Write the input section of the xml file for generating input forms on the Parallel Works platform"""
 
@@ -411,3 +418,53 @@ def writeXMLPWfile(case, paramTypes, xmlFile, helpStr = 'Whitespace delimited or
     f.write("</tool> \n")
     f.close()
     return paramsBytype
+
+
+def writeXMLPWfile(sample_case, param_types, xml_file,
+                   help_text='Whitespace delimited or range/step (e.g. min:max:step)',
+                   user_name='user',
+                   workflow_name='workflow',
+                   swift_script='main.swift'):
+
+    param_values = convertListOfDicts2Dict(sample_case)
+
+    # Convert empty parameter strings to None
+    for key, value in param_types.items():
+        if not value:
+            param_types[key] = None
+
+    # Create an input object
+    inp = input_form.Inputs()
+    for param_name, value in param_values.items():
+        param = input_form.Param(param_name, value, 'text',
+                                 section_name=param_types[param_name],
+                                 help_text=help_text)
+        inp.add_param(param)
+
+    # Create the xml
+    form = input_form.create_form_xml(tool_name=user_name+'_'+workflow_name,
+                                      swift_script=swift_script)
+
+    # add the input element to the xml
+    form_input = etree.SubElement(form, "input")
+
+    for param in inp.params:
+        param.add_to_xml(form_input)
+
+    for section_name, section in inp.sections.items():
+        s = section.add_to_xml(form_input)
+        for ip in section.params:
+            ip.add_to_xml(s)
+
+    # add a place holder for specifying workflow outputs
+    outs = etree.SubElement(form, "outputs")
+    data = etree.SubElement(outs, "data")
+    data.set('name','output')
+    data.set('type', 'data')
+    data.set('format', 'txt')
+    data.set('label', 'output.txt')
+
+    print(etree.tostring(form, pretty_print=True).decode('utf-8'))
+    fxml = data_IO.open_file(xml_file, "w")
+    fxml.write(etree.tostring(form, pretty_print=True).decode('utf-8'))
+    fxml.close()
