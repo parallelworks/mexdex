@@ -98,11 +98,16 @@ caselist = paramUtils.writeInputParamVals2caselist(cases, inputVarNames)
 
 # Read the kpihash and set the default values for missing fields
 [kpihash, orderPreservedKeys] = metricsJsonUtils.readKPIJsonFile(kpiFile)
+
 for kpi in kpihash:
     kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi], kpi)
 
 # Read the list of desired output metrics
 outParamTable = paramUtils.getOutputParamsFromKPI(kpihash, orderPreservedKeys, ignoreSet)
+
+
+# Add an additional parameter for displaying solution convergence
+outParamTable.append(['simulation_completed', -2])
 
 # Read the desired metric from each output file and add them to caselist
 caselist = paramUtils.writeOutParamVals2caselist(cases, metricsFilesNameTemplate,

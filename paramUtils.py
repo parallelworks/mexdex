@@ -287,7 +287,8 @@ def getOutputParamsStatListOld(outputParamsFileAddress, outputParamNames,
     return outParamsList
 
 
-def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
+def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash,
+                         add_sim_status_param=False):
 
     outParamsList = []
 
@@ -300,6 +301,7 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
     if readMEXCSVFile:
         PVcsvAddress = csvTemplateName.format(caseNumber)
 
+    solution_converged = True
     for param in paramTable:
         if param[1] >= 0: # Read the parameters from a Mex (Paraview) .csv file
             try:
@@ -310,9 +312,10 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
             except (IOError, ValueError):
                 print('Error reading {} from file {}. Setting value to '
                       'NaN'.format(param[0], PVcsvAddress))
+                solution_converged = False
                 param_icase = float('NaN')
 
-        else:  # Read parameters from other files if provided
+        elif param[1] == -1:  # Read parameters from other files if provided
             metrichash = kpihash[param[0]]
             dataFile = metrichash['resultFile'].format(caseNumber)
             dataFileParamFlag = metrichash['DEXoutputFlag']
@@ -329,9 +332,17 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash):
             except (IOError, ValueError):
                 print('Error reading {} from file {}. Setting value to '
                       'NaN'.format(dataFileParamFlag,dataFile))
+                solution_converged = False
                 param_icase = float('NaN')
+        elif param[1] == -2: # This is for outputting simulation status
+            continue
         outParamsList.append(str(param_icase))
 
+    if add_sim_status_param:
+        if solution_converged:
+            outParamsList.append(str(1))
+        else:
+            outParamsList.append(str(0))
 
     return outParamsList
 
@@ -341,7 +352,8 @@ def writeOutParamVals2caselist(cases, csvTemplateName, paramTable, caselist, kpi
     # Read the desired metric from output file(s) for each case
     for icase, case in enumerate(cases):
         outparamList = readOutParamsForCase(paramTable, csvTemplateName,
-                                            icase, kpihash)
+                                            icase, kpihash,
+                                            add_sim_status_param=True)
         caselist[icase] += "," + ",".join(outparamList)
 
     return caselist
