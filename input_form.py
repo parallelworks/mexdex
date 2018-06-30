@@ -48,13 +48,6 @@ class Param:
         self.section = section_name
         self.width = width
 
-    def xml_text(self):
-        text = "name='{name}' type='{param_type}' value='{value}' label='{label}' " \
-               "width='{width}%'".format(**vars(self))
-        if self.section is not None:
-            text = text + " argument='{section}'".format(**vars(self))
-        return text
-
     def add_to_xml(self, xml_root):
         param_elem = etree.SubElement(xml_root, "param")
         param_elem.set('name', self.name)
@@ -82,11 +75,6 @@ class Section:
     def add_param(self, param):
         param.section = self.name
         self.params.append(copy.deepcopy(param))
-
-    def xml_text(self):
-        text = "name='{name}' type='section' title='{title}' " \
-               "expanded='{expanded}'".format(**vars(self))
-        return text
 
     def add_to_xml(self, xml_root):
         section_elem = etree.SubElement(xml_root, 'section')
