@@ -470,7 +470,7 @@ def writeXMLPWfile(sample_case, param_types, xml_file,
                                       swift_script=swift_script)
 
     # add the input element to the xml
-    form_input = etree.SubElement(form, "input")
+    form_input = etree.SubElement(form, "inputs")
 
     for param in inp.params:
         param.add_to_xml(form_input)

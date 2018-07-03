@@ -57,12 +57,12 @@ def parse_args():
                              'enter it as $\'\\n\' when calling via bash '
                              '(default:";")')
 
-    parser.add_argument("--paramsDelimiter", default='\n',
-                        help='The delimiter to separate parameter/value pairs from each '
-                             'other in <parameter_file>. For example, '
-                             '"paramA;section1;0|paramB;section1;A B C|" adds two '
-                             'parameters ("paramA" and "paramB") to the input form '
-                             'under the section "section1". To set '
+    parser.add_argument("--paramSetsDelimiter", default='|',
+                        help='The delimiter to separate parameter/section/value sets '
+                             'from each other in <parameter_file>. For example, in '
+                             '"paramA;section1;0|paramB;section1;A B C|", "|" delimits '
+                             'two parameter/section/value sets '
+                             '("paramA" and "paramB"). To set '
                              'delimiters that have a backslash ("\\") in them '
                              '(e.g., "\\n"), '
                              'set the delimiter with $\'xx\' format. For example, '
@@ -84,7 +84,7 @@ def main():
     cases, _, param_types = paramUtils.readCases(params_file,
                                                  withParamType=args.withParamTag,
                                                  namesdelimiter=args.paramValueDelimiter,
-                                                 paramsdelimiter=args.paramsDelimiter)
+                                                 paramsdelimiter=args.paramSetsDelimiter)
 
     print("Parameters/Sections:")
     print(json.dumps(param_types, indent=4))
