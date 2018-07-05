@@ -5,9 +5,9 @@ from string import Template
 
 parser = argparse.ArgumentParser(
     description='Generate the caseList file which lists the parameter names and values '
-                'for each simulation case per line by expanding the parameters in the'
-                'sweep.run file. In addition, separate (templated) input files can also '
-                'be generated if a path is provided.')
+                'for each simulation case per line by expanding the parameters in a '
+                'provided <sweep.run> file. In addition, separate (templated) input '
+                'files can also be generated if a path is provided.')
 
 parser.add_argument("sweepRunFile",
                     help="The sweepRunFile file contains parameter names and their values.")
@@ -25,8 +25,8 @@ parser.add_argument("--SR_paramValueDelimiter", default=';',
                          '<sweepRunFile> (default:";")')
 
 parser.add_argument("--SR_paramsDelimiter", default='|',
-                    help='The delimiter to separate parameter/value pairs from each other in '
-                         '<sweepRunFile> (default:"|")')
+                    help='The delimiter to separate parameter/value pairs from each '
+                         'other in <sweepRunFile> (default:"|")')
 
 parser.add_argument("--withParamTag", dest='withParamTag', action='store_true',
                     help='If set, a tag can be specified between the parameter name and '
@@ -62,12 +62,12 @@ parser.add_argument("--separateParamFileTemplate", default="",
                          'input files would be simply written based on the '
                          'given/default delimiters.)')
 
-parser.add_argument("--SepFile_paramValueDelimiter", default='\n',
+parser.add_argument("--SepFile_paramValueDelimiter", default='\\n',
                     help='The delimiter between a parameter name and its value in '
-                         '<seperateParamFiles> (default:"\n")')
-parser.add_argument("--SepFile_paramsDelimiter", default='\n',
+                         '<seperateParamFiles> (default:"\\n")')
+parser.add_argument("--SepFile_paramsDelimiter", default='\\n',
                     help='The delimiter to separate parameter/value pairs from each '
-                         'other in <seperateParamFiles> (default:"\n")')
+                         'other in <seperateParamFiles> (default:"\\n")')
 
 parser.set_defaults(withParamTag=True)
 
