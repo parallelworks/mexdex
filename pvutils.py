@@ -628,6 +628,7 @@ def colorMetric(d, metrichash):
             ctfColorBar.Position2 = [0.5,0] # no such property in PV 5.04
         else:
             ctfColorBar.WindowLocation = 'LowerCenter'
+            ctfColorBar.ScalarBarLength = 0.5
     else:
         # left
         if PVversion < 5.04:
@@ -635,6 +636,7 @@ def colorMetric(d, metrichash):
             ctfColorBar.Position2 = [0.4,0] # no such property in PV 5.04
         else:
             ctfColorBar.WindowLocation = 'LowerLeftCorner'
+            ctfColorBar.ScalarBarLength = 0.4
 
     #if individualImages == False:
     #    display.SetScalarBarVisibility(renderView1, False)
@@ -794,7 +796,14 @@ def createClip(metrichash, data_reader, data_display):
     s = Clip(Input=data_reader)
     s.ClipType = cliptype
     s.ClipType.Origin = camera.GetFocalPoint()
-    s.InsideOut = invert
+
+    PVversion = getParaviewVersion()
+
+    if PVversion < 5.05:
+        s.InsideOut = invert
+    else:
+        s.Invert = invert
+
     s.ClipType.Origin = setviewposition(metrichash['position'],camera)
     s.ClipType.Normal = planeNormalFromName(plane)
     sDisplay = Show(s, renderView1)
@@ -845,7 +854,14 @@ def createVolume(metrichash, data_reader, data_display):
     # (xmin,xmax,ymin,ymax,zmin,zmax)
     #c.ClipType.Bounds = [0.1, 3, 0.1, 2.3, 0.15, 2.3]
     c.ClipType.Bounds = bounds
-    c.InsideOut = 1
+
+    PVversion = getParaviewVersion()
+
+    if PVversion < 5.05:
+        c.InsideOut = 1
+    else:
+        c.Invert = 1
+
     cDisplay = Show(c, renderView1)
     cDisplay.ColorArrayName = ['Points', metrichash['field']]
     cDisplay.SetRepresentationType(metrichash['representationType']) 
