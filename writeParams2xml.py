@@ -5,7 +5,7 @@ import paramUtils
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='''This script creates the xml file for PW a workflow using a 
+        description='''This script creates the xml file for a PW workflow using a 
         sample parameter file. The names of the input sections can also be specified 
         in the parameter file. For example, 
         "param1;;0|param2;sec1;0|param3;sec1;2|" 

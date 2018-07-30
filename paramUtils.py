@@ -3,13 +3,12 @@ import sys
 import itertools as it
 import warnings
 import re
-from lxml import etree
+
 
 
 from collections import OrderedDict
 
 import data_IO
-import input_form
 
 
 def readCases(paramsFile, namesdelimiter=";", valsdelimiter="_",
@@ -449,7 +448,8 @@ def writeXMLPWfile(sample_case, param_types, xml_file,
                    user_name='user',
                    workflow_name='workflow',
                    swift_script='main.swift'):
-
+    import input_form
+    from lxml import etree
     param_values = convertListOfDicts2Dict(sample_case)
 
     # Convert empty parameter strings to None

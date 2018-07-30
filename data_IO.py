@@ -199,6 +199,7 @@ def read_string_from_file_pointer(file_pointer, flag_str, delimiter=None,
                 line = line[len(flag_str + xstr(delimiter)):]
             if delimiter != "\n":
                 data = line.split(delimiter)[start_index]
+                data = data.rstrip('\n')
             else:
                 data = lines[i + 1 + start_index]
 
