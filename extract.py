@@ -1,9 +1,11 @@
 from paraview.simple import *
 import argparse
 
+# mexdex specific modules.
 import pvutils
 import metricsJsonUtils
 import data_IO
+
 import os
 
 parser = argparse.ArgumentParser(

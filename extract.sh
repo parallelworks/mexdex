@@ -32,6 +32,6 @@ then
 	fi
 fi
 
-xvfb-run -a --server-args="-screen 0 1024x768x24" $paraviewPath/pvpython  --mesa-llvm   extract.py  $resultsFile $desiredMetricsFile  $pvOutputDir $outputMetrics $caseNumber $convert2cellData 
+xvfb-run -a --server-args="-screen 0 1024x768x24" $paraviewPath/pvpython  --mesa-llvm   /mexdex/extract.py  $resultsFile $desiredMetricsFile  $pvOutputDir $outputMetrics $caseNumber $convert2cellData 
 
 
