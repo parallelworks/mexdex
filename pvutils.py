@@ -402,17 +402,40 @@ def readDataFile(dataFileAddress, dataarray, convert2cellData=False):
         # probably define more specific, customized extensions
         # to make it clear that *this* .h5 file is going with
         # this reader.  For example, *.pflo.h5 or *.ph5.
-        dataReader = VisItPFLOTRANReader(FileName=[dataFileAddress],PointArrays=dataarray)
+        dataReader = VisItPFLOTRANReader(FileName=[dataFileAddress], CellArrays=dataarray)
 
+        # Note: I could have included a separate line
+        # dataReader.CellArrays = dataarray
+        # after the line above, but here I do it
+        # all together.  Since we're explicitly
+        # loading cell arrays, we will need to convert
+        # cell data to point data by passing
+        # "true" as the 7th argument to
+        # extract.py for using this particular dataset.
+        # Since I have to glean the meaning of
+        # cell and point data from the OpenFOAM
+        # documentation, I don't know to what
+        # extent this is standardized, so the
+        # degree to which this code is generalizeable
+        # is unknown:
+        # https://www.openfoam.com/documentation/user-guide/mesh-description.php
+        
         # Specify which variables/arrays to load.
         # You can also specify dataReader.CellArrays,
         # Materials, and Meshes. See:
         # https://kitware.github.io/paraview-docs/latest/python/paraview.simple.VisItPFLOTRANReader.html
         #
         # I replaced this line with an explicit assignment
-        # to PointArrays in the above line.
+        # to PointArrays in the above line.  NOTE: This
+        # line did not work, I had to use CellArrays
+        # instead!
         #dataReader.PointArrays = dataarray
 
+        # Other lines that Alvaro noted in the PV GUI:
+        #dataReader.Meshes = ['mesh']
+        #dataReader.Materials = ['1', '2']
+        #dataReader.CellArrays = ['Liquid_Pressure [Pa]', 'Liquid_Saturation', 'Liquid Velocity [m_per_d]']
+        
         # These lines are helpful for listing what is available
         # in the dataReader object.
         #print(type(dataReader))
