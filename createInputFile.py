@@ -6,7 +6,7 @@ from string import Template
 def parse_inputs():
     parser = argparse.ArgumentParser(
         description='Create an input file based on a given template file. '
-                    'The tagged values in the template file will be replaced '
+                    'The tagged values in the template file will be replaced'
                     'using a list of variables and their values.')
 
     parser.add_argument("templateFile",
@@ -16,7 +16,7 @@ def parse_inputs():
                              'for each case.'
                              'The substitutions can be specified by using the '
                              'parameter names as identifiers. Identifiers must match the '
-                             'parameter names in the <sweepRunFile>. For example '
+                             'parameter names in the <sweepRunFile>. For example'
                              'to substitute param1 with its value use "$param1" or '
                              '"${param1} in the template file where "$" is the '
                              'delimiter for substitution. ')

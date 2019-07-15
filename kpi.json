@@ -1,0 +1,14 @@
+{
+    "liquid_pressure": {
+	"field": "Liquid_Pressure [Pa]",
+	"type": "Clip",
+	"plane": "y",
+        "image": "-y",
+	"position": "50 5 5",
+        "invert": "false",
+	"animation": "true",
+	"extractStats": "false",
+      	"bodyopacity": "0.0",
+        "DEXoutputFlag": "none"	
+    }
+}

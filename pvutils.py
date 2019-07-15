@@ -301,6 +301,9 @@ def correctfieldcomponent(datasource, metrichash):
     """
     kpifld = metrichash['field']
     arrayInfo = datasource.PointData[kpifld]
+    #if type(arrayInfo) is type(None):
+    #    metrichash['fieldComponent'] = ''
+    
     if isfldScalar(arrayInfo):
         metrichash['fieldComponent'] = ''
     else:
@@ -339,6 +342,16 @@ def readDataFile(dataFileAddress, dataarray, convert2cellData=False):
 
         # only load the data that is needed
         dataReader.PointVariables = dataarray
+    elif readerType == 'pvd':
+        dataReader = PVDReader(FileName=[dataFileAddress])
+    elif readerType == 'nek5000':
+        dataReader = VisItNek5000Reader(FileName=dataFileAddress)
+        #dataReader.Meshes = ['mesh']
+        dataReader.PointArrays =  dataarray
+    elif readerType == 'h5':
+        dataReader = VisItPFLOTRANReader(FileName=dataFileAddress)
+        #dataReader.Meshes = ['mesh']
+        dataReader.CellArrays = dataarray
     elif readerType == 'openFOAM':
         # create a new 'OpenFOAMReader'
         dataReader = OpenFOAMReader(FileName=dataFileAddress)

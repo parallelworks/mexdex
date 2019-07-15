@@ -76,9 +76,9 @@ for kpi in kpihash:
 
     HideAll()
     Show(dataReader, renderView1)
+    renderView1.AxesGrid.Visibility = 1
     if kpiimage != "None" and kpiimage != "plot":
         pvutils.adjustCamera(kpiimage, renderView1, metrichash)
-    
     print(kpi)
     
     if kpitype == "Slice":
@@ -93,6 +93,8 @@ for kpi in kpihash:
         pw_filter = pvutils.createLine(metrichash, dataReader, outputDir, caseNumber)
     elif kpitype == "StreamLines":
         pw_filter = pvutils.createStreamTracer(metrichash, dataReader, readerDisplay)
+    elif kpitype == "VolumeWarpByVector":
+        pw_filter = pvutils.createVolumeWarpbyVector(metrichash, dataReader, readerDisplay)
     elif kpitype == "Volume":
         pw_filter = pvutils.createVolume(metrichash, dataReader, readerDisplay)
     elif kpitype == "Basic":
