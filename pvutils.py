@@ -204,10 +204,16 @@ def extractStats(dataSource, statTag, metrichash, fp_csv_metrics):
     arrayInfo = dataSource.PointData[kpifield]
 
     # create a new 'Calculator'
-    if isfldScalar(arrayInfo):
+    # SFG: Some readers do not allow PointData[kpifield]
+    # and return None instead.  See comments in
+    # correctfieldcomponent.
+    if type(arrayInfo) is type(None):
+        statVarName = kpifield
+    elif isfldScalar(arrayInfo):
         statVarName = kpifield
     else:
         statVarName = kpifield + '_' + kpiComp
+
     calc1 = Calculator(Input=dataSource)
 
     resultVarName = statVarName+'_s'
@@ -301,11 +307,44 @@ def correctfieldcomponent(datasource, metrichash):
     """
     kpifld = metrichash['field']
     arrayInfo = datasource.PointData[kpifld]
-    if isfldScalar(arrayInfo):
+
+    # SFG: For datasource coming from certain readers,
+    # in particular the VisITPFLOTRANReader,
+    # datasource.PointData[kpifld] is type None
+    # but datasource.PointData is valid (but
+    # it does not have the GetNumberOfComponents()
+    # function that isfldScalar is expecting.
+    # The quick fix here is to check for type None
+    # and return the empty string (since what
+    # I want is a scalar anyway) - BUT THIS IS
+    # BY NO MEANS A UNIVERSAL FIX.  We need to
+    # develop a clear standard for how we test
+    # for the topology of the data and this will
+    # require a careful investigation of the
+    # Paraview Python code.
+    #
+    # Furthermore, it seems that type checking
+    # is a real pitfall in Python, see:
+    # http://canonical.org/~kragen/isinstance/
+    # so this means we doubly need to develop
+    # a coherent standard. 
+    #
+    # In this case, previous readers that
+    # work should bypass the first if and
+    # engage either the elif or else, so
+    # this modification should not impact
+    # other pipelines.
+    
+    if type(arrayInfo) is type(None):
         metrichash['fieldComponent'] = ''
+    
+    elif isfldScalar(arrayInfo):
+        metrichash['fieldComponent'] = ''
+        
     else:
         if not 'fieldComponent' in metrichash:
             metrichash['fieldComponent'] = 'Magnitude'
+            
     return metrichash
 
 
@@ -352,6 +391,55 @@ def readDataFile(dataFileAddress, dataarray, convert2cellData=False):
         
     elif readerType == 'stl':
         dataReader = STLReader(FileNames=[dataFileAddress])
+
+    elif readerType == 'h5':
+        # This object does not have the FileNames property,
+        # rather it has the FileName property.
+        #
+        # For future reference: lots of other apps may generate
+        # .h5 files with radically different topology compared
+        # to PFLOTRAN's output.  This means that we should
+        # probably define more specific, customized extensions
+        # to make it clear that *this* .h5 file is going with
+        # this reader.  For example, *.pflo.h5 or *.ph5.
+        dataReader = VisItPFLOTRANReader(FileName=[dataFileAddress], CellArrays=dataarray)
+
+        # Note: I could have included a separate line
+        # dataReader.CellArrays = dataarray
+        # after the line above, but here I do it
+        # all together.  Since we're explicitly
+        # loading cell arrays, we will need to convert
+        # cell data to point data by passing
+        # "true" as the 7th argument to
+        # extract.py for using this particular dataset.
+        # Since I have to glean the meaning of
+        # cell and point data from the OpenFOAM
+        # documentation, I don't know to what
+        # extent this is standardized, so the
+        # degree to which this code is generalizeable
+        # is unknown:
+        # https://www.openfoam.com/documentation/user-guide/mesh-description.php
+        
+        # Specify which variables/arrays to load.
+        # You can also specify dataReader.CellArrays,
+        # Materials, and Meshes. See:
+        # https://kitware.github.io/paraview-docs/latest/python/paraview.simple.VisItPFLOTRANReader.html
+        #
+        # I replaced this line with an explicit assignment
+        # to PointArrays in the above line.  NOTE: This
+        # line did not work, I had to use CellArrays
+        # instead!
+        #dataReader.PointArrays = dataarray
+
+        # Other lines that Alvaro noted in the PV GUI:
+        #dataReader.Meshes = ['mesh']
+        #dataReader.Materials = ['1', '2']
+        #dataReader.CellArrays = ['Liquid_Pressure [Pa]', 'Liquid_Saturation', 'Liquid Velocity [m_per_d]']
+        
+        # These lines are helpful for listing what is available
+        # in the dataReader object.
+        #print(type(dataReader))
+        #print(dir(dataReader))
 
     if convert2cellData:
         # create a new 'Cell Data to Point Data'

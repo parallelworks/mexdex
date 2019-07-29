@@ -27,9 +27,9 @@ fi
 conver2cellData=""
 if [ $# -eq 7 ]
 then
-	if [ "$7" = true ] ; then
-		convert2cellData="--convert_to_cell_data"
-	fi
+    if [ "$7" = true ] ; then
+	convert2cellData="--convert_to_cell_data"
+    fi
 fi
 
 xvfb-run -a --server-args="-screen 0 1024x768x24" $paraviewPath/pvpython  --mesa-llvm   extract.py  $resultsFile $desiredMetricsFile  $pvOutputDir $outputMetrics $caseNumber $convert2cellData 
