@@ -1,5 +1,8 @@
-MEXDEX modules
+# MEXDEX modules
 ==============
+
+## Summary
+-------
 
 This repository contains the Python modules for
 
@@ -14,8 +17,16 @@ In addition, the following python tools are included:
 -   `prepinputs.py` : Generates a file which lists the parameter names and values for each simulation case per line by expanding the parameters in a provide `params.run` file. In addition, separate (templated) input files can also be generated if a path is provided.
 -   `writeParams2xml.py` : This script creates the xml file for a PW workflow using a sample parameter file. The names of the input sections can also be specified in the parameter file.
 
-Usage
------
+## Usage
+-------
+
+### Shell scripts
+
+-   main.sh is a wrapper that creates a container to run MEXDEX scripts in Paraview.  This script if often customized; this version works with the conecsv demo.
+-   extract.sh is a wrapper (called by main.sh) to launch Paraview and do the actual visualization.  This script launches extract.py.
+-   main_template.sh is a simplified version of main.sh highlighting the core requirements of running MEXDEX.
+
+### Python scripts
 
 -   Details and examples for using the `extract.py` (for Metrics Extraction) is provided in [Metrics Extraction repository](https://github.com/parallelworks/MetricExtraction.git)
 -   Details and examples for using the `writeDesignExplorerCsv.py` (for Design Explorer) is provided in [Design Explorer Modules Repository](https://github.com/parallelworks/designExplorerModules.git)
@@ -25,7 +36,7 @@ Usage
     python writeParams2xml.py -h
     ```
 
-License
+## License
 -------
 
 This project is licensed under the MIT License - see the [file:LICENSE.md](LICENSE.md) file for details

@@ -1,10 +1,29 @@
 #!/bin/bash
-kpi_file=$1
-results_file=$2
-mexdex_out_dir=$3
-echo "Extracting metrics"
+work_dir=`pwd`
+# Import general bash workflow functions
+# . in bash is nearly the same as "source"
+. utils/general.sh
+case_number=$1
+metricsfile=$2
+check_file_exists ${metricsfile}
+stlfile=$3
+check_file_exists ${stlfile}
+# Output directory for Paraview
+outdir=$4
+kpifile=$5
+check_file_exists ${kpifile}
+
+
+# WARNING: Assumes all metrics go to same file!!
+metricsfile_kpi=$(cat ${kpifile} | grep -Po '"resultFile":.*?[^\\]",' | cut -d'"' -f4 | uniq | sed "s/{:d}/${case_number}/g")
+# Check that metrics file specified in kpifile is the same as metricsfile:
+if [ ${metricsfile} != ${metricsfile_kpi} ]; then
+    echo "ERROR: Check resultFile key value in ${kpifile}"
+    exit 1
+fi
+
+
 echo "Running mexdex in docker container"
 run_command="docker run --rm  -i --user root -v `pwd`:/scratch -w /scratch docker.io/parallelworks/paraview:v5_4u_imgmagick_rootUser /bin/bash"
 paraviewPath=/opt/ParaView-5.4.1-Qt5-OpenGL2-MPI-Linux-64bit/bin/
-mkdir -p out
-sudo $run_command mexdex/extract.sh ${paraviewPath} ${results_file} ${kpi_file} ${mexdex_out_dir} ${mexdex_out_dir}/dummy
+sudo $run_command mexdex/extract.sh ${paraviewPath} ${stlfile} ${kpifile} ${outdir} ${outdir}/dummy
