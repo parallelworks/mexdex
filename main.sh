@@ -2,6 +2,10 @@
 work_dir=`pwd`
 # Import general bash workflow functions
 # . in bash is nearly the same as "source"
+# This line will work as long as the utils
+# directory is passed as a mapped list of
+# files to the SWIFT app that calls this
+# script.
 . utils/general.sh
 case_number=$1
 metricsfile=$2
@@ -29,4 +33,4 @@ fi
 echo "Running mexdex in docker container"
 run_command="docker run --rm  -i --user root -v `pwd`:/scratch -w /scratch docker.io/parallelworks/paraview:v5_4u_imgmagick_rootUser /bin/bash"
 paraviewPath=/opt/ParaView-5.4.1-Qt5-OpenGL2-MPI-Linux-64bit/bin/
-sudo $run_command mexdex/extract.sh ${paraviewPath} ${inputfile} ${kpifile} ${outdir} ${outdir}/dummy
+sudo $run_command mexdex/extract.sh ${paraviewPath} ${inputfile} ${kpifile} ${outdir} ${outdir}/dummy ${case_number} true
