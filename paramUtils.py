@@ -299,7 +299,7 @@ def readOutParamsForCase(paramTable, csvTemplateName, caseNumber, kpihash,
 
     if readMEXCSVFile:
         PVcsvAddress = csvTemplateName.format(caseNumber)
-
+        
     solution_converged = True
     for param in paramTable:
         if param[1] >= 0: # Read the parameters from a Mex (Paraview) .csv file
