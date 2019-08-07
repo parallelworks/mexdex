@@ -2,8 +2,10 @@ import paramUtils
 import argparse
 import metricsJsonUtils
 import os
+import json
 
-# Generate a csv file for Design Explorer (DEX) from the input parameters and output
+# Generate a csv file for Design Explorer (DEX)
+# from the input parameters and output
 # metrics.
 # Example output csv file for Design Explorer
 """
@@ -86,34 +88,54 @@ cases = paramUtils.readParamsFile(caseListFile, paramValDelim=casesListParamValD
 # Correct input variable names: Replace comma's with "_"
 cases = paramUtils.correct_input_variable_names(cases)
 
-# cases = paramUtils.correct_input_var_names(cases)
-print(" Read " + str(len(cases)) + " Cases")
+print("---> Read " + str(len(cases)) + " cases from " + caseListFile)
 
 # Get the list of input parameters from the first case
 inputVarNames = paramUtils.getParamNamesFromCase(cases[0])
 inputVarNames = list(set(inputVarNames)-ignoreSet)
 
+print("---> Found these input variable names: ")
+for varName in inputVarNames:
+    print(varName)
+
 # Add the values of input parameters for each case to caselist
 caselist = paramUtils.writeInputParamVals2caselist(cases, inputVarNames)
 
+print("---> Found these cases: ")
+for case in caselist:
+    print(case)
+
 # Read the kpihash and set the default values for missing fields
+print("---> Reading the kpi.json file...")
 [kpihash, orderPreservedKeys] = metricsJsonUtils.readKPIJsonFile(kpiFile)
+
+print("---> Original input kpi.json:")
+print(json.dumps(kpihash, indent=4))
+
+print("---> Setting missing fields to defaults:")
 
 for kpi in kpihash:
     kpihash[kpi] = metricsJsonUtils.setKPIFieldDefaults(kpihash[kpi], kpi)
-
-# Read the list of desired output metrics
+    
+print(json.dumps(kpihash, indent=4))
+    
+print("---> Reading list of desired output metrics...")
 outParamTable = paramUtils.getOutputParamsFromKPI(kpihash, orderPreservedKeys, ignoreSet)
 
+print("---> Found these output parameters: ")
+print(outParamTable)
 
-# Add an additional parameter for displaying solution convergence
+print("---> Adding additional simulation_completed parameter...")
+# This is for displaying solution convergence
 outParamTable.append(['simulation_completed', -2])
 
 # Read the desired metric from each output file and add them to caselist
+print("---> Reading metrics from output files...")
 caselist = paramUtils.writeOutParamVals2caselist(cases, metricsFilesNameTemplate,
                                                  outParamTable, caselist, kpihash)
 
 # Get the list of desired images
+print("---> Getting images...")
 imgList, imgNames = paramUtils.getOutImgsFromKPI(kpihash, orderPreservedKeys)
 
 caselist = paramUtils.writeImgs2caselist(cases, imgNames, basepath, imagesdir,
@@ -124,3 +146,5 @@ header = paramUtils.generateHeader(inputVarNames, outParamTable, imgList)
 
 # Write the Design Explorer csv file:
 paramUtils.writeDesignExplorerCSVfile(deCSVFile, header, caselist)
+
+print("---> Done writing Design Explorer csv file.")
