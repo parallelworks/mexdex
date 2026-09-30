@@ -39,4 +39,4 @@ In addition, the following python tools are included:
 ## License
 -------
 
-This project is licensed under the MIT License - see the [file:LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache License 2.0 - see the [file:LICENSE.md](LICENSE.md) file for details
